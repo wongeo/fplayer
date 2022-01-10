@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -46,7 +47,7 @@ import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
  * Created by 巫鸦 on 2017/11/9.
  */
 
-public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> implements View.OnTouchListener, View.OnClickListener, SeekBar.OnSeekBarChangeListener {
+public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> implements View.OnTouchListener, View.OnClickListener, View.OnLongClickListener, SeekBar.OnSeekBarChangeListener {
 
     private CustomVideoPresenter mPresenter;
     public CustomVideoView mPlayerView;
@@ -78,6 +79,8 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
 
             mPlayerView = new CustomVideoView(getActivity());
             mPlayerView.setOnClickListener(this);
+            mPlayerView.setOnLongClickListener(this);
+            mPlayerView.setOnTouchListener(this);
             mPlayer = mPlayerView.getPlayer();
 
             //播放器控制按钮
@@ -109,6 +112,9 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
+        if (event.getAction() == MotionEvent.ACTION_UP) {
+            mPlayer.setSpeed(1);
+        }
         return false;
     }
 
@@ -307,5 +313,11 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
     private void setPositionForView(int position) {
         mSeekBar.setProgress(position);
         mPositionTxt.setText(TimeUtil.format(position));
+    }
+
+    @Override
+    public boolean onLongClick(View view) {
+        mPlayer.setSpeed(3);
+        return false;
     }
 }

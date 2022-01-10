@@ -19,4 +19,6 @@ public interface Player {
     void setDisplay(Surface surface);
 
     void seekTo(int value);
+
+    void setSpeed(float speed);
 }

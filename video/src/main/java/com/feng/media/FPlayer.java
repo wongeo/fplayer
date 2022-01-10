@@ -3,6 +3,7 @@ package com.feng.media;
 import android.content.Context;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.media.PlaybackParams;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -107,6 +108,16 @@ public class FPlayer implements Player {
     public void seekTo(int progress) {
         mMediaPlayer.seekTo(progress);
         mMediaPlayer.start();
+    }
+
+    @Override
+    public void setSpeed(float speed) {
+        if (android.os.Build.VERSION.SDK_INT >=
+                android.os.Build.VERSION_CODES.M) {
+            PlaybackParams playbackParams = mMediaPlayer.getPlaybackParams();
+            playbackParams.setSpeed(speed);
+            mMediaPlayer.setPlaybackParams(playbackParams);
+        }
     }
 
     public void start() {
