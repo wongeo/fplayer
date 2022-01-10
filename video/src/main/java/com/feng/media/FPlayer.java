@@ -17,6 +17,7 @@ public class FPlayer implements Player {
     private final MediaPlayer mMediaPlayer;
     private int mProgress;
     private Handler mHandler;
+    private float mSpeed;
 
     public FPlayer(Context context) {
         mMediaPlayer = new MediaPlayer();
@@ -112,11 +113,13 @@ public class FPlayer implements Player {
 
     @Override
     public void setSpeed(float speed) {
-        if (android.os.Build.VERSION.SDK_INT >=
-                android.os.Build.VERSION_CODES.M) {
-            PlaybackParams playbackParams = mMediaPlayer.getPlaybackParams();
-            playbackParams.setSpeed(speed);
-            mMediaPlayer.setPlaybackParams(playbackParams);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            if (mSpeed != speed) {
+                mSpeed = speed;
+                PlaybackParams playbackParams = mMediaPlayer.getPlaybackParams();
+                playbackParams.setSpeed(speed);
+                mMediaPlayer.setPlaybackParams(playbackParams);
+            }
         }
     }
 

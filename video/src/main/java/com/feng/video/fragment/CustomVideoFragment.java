@@ -11,6 +11,7 @@ import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -26,6 +27,7 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 
 import com.feng.media.Player;
+import com.feng.media.State;
 import com.feng.mvp.BaseFragment;
 import com.feng.video.R;
 import com.feng.video.adapter.FileAdapter;
@@ -115,8 +117,38 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
         if (event.getAction() == MotionEvent.ACTION_UP) {
             mPlayer.setSpeed(1);
         }
-        return false;
+        return mGestureDetector.onTouchEvent(event);
     }
+
+    private final GestureDetector mGestureDetector = new GestureDetector(getActivity(), new GestureDetector.SimpleOnGestureListener() {
+
+
+        @Override
+        public boolean onSingleTapConfirmed(MotionEvent e) {//单击事件
+            if (isControlBarShowing()) {
+                hideControlBar();
+            } else {
+                showControlBar();
+            }
+            return super.onSingleTapConfirmed(e);
+        }
+
+        @Override
+        public boolean onDoubleTap(MotionEvent e) {//双击事件
+            State state = mPlayer.getState();
+            if (state == State.PLAYING) {
+                mPlayer.pause();
+            } else if (state == State.PAUSE) {
+                mPlayer.start();
+            }
+            return super.onDoubleTap(e);
+        }
+
+        @Override
+        public boolean onDoubleTapEvent(MotionEvent e) {
+            return super.onDoubleTapEvent(e);
+        }
+    });
 
     private boolean isControlBarShowing() {
         return mControlBarPanel.getVisibility() == View.VISIBLE;
@@ -151,15 +183,11 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
         } else if (id == R.id.pause_button) {
             mPresenter.pause();
         } else if (id == R.id.start_button) {
-            mPresenter.start();
+            mPresenter.pause();
         } else if (id == R.id.full) {
             goFullScreen();
         } else if (mPlayerView == v) {
-            if (isControlBarShowing()) {
-                hideControlBar();
-            } else {
-                showControlBar();
-            }
+
         } else if (id == R.id.apply_address_btn) {
             Button btn = (Button) v;
             if ("确认".equals(btn.getText())) {
