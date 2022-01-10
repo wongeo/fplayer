@@ -8,14 +8,18 @@ import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -27,6 +31,8 @@ import com.feng.video.adapter.FileAdapter;
 import com.feng.video.adapter.Item;
 import com.feng.video.db.LocalDataSource;
 import com.feng.video.db.NetDataSource;
+import com.feng.video.util.SharedPreferencesUtil;
+import com.feng.video.util.TimeUtil;
 import com.feng.video.view.CustomVideoView;
 
 import org.jetbrains.annotations.NotNull;
@@ -50,6 +56,10 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
     //播放器父容器
     private FrameLayout mSmallContainer, mFullContainer;
     private SeekBar mSeekBar;
+    private EditText mAddressEdt;
+    private String mAddress;
+    private View mControlBarPanel;
+    private TextView mPositionTxt, mDurationTxt;
 
     public CustomVideoFragment() {
         mPresenter = new CustomVideoPresenter(this);
@@ -61,6 +71,7 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
     public View onCreateView(@NotNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         if (mRootView == null) {
             mRootView = inflater.inflate(R.layout.custom_video_fragment2, container, false);
+            View view = mRootView;
             //播放器父容器
             mSmallContainer = mRootView.findViewById(R.id.small_screen_player_view_container);
             mFullContainer = mRootView.findViewById(R.id.full_screen_player_view_container);
@@ -70,17 +81,26 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
             mPlayer = mPlayerView.getPlayer();
 
             //播放器控制按钮
-            mRootView.findViewById(R.id.play_url).setOnClickListener(this);
-            mRootView.findViewById(R.id.play_path).setOnClickListener(this);
-            mRootView.findViewById(R.id.play_json).setOnClickListener(this);
-            mRootView.findViewById(R.id.start_button).setOnClickListener(this);
-            mRootView.findViewById(R.id.pause_button).setOnClickListener(this);
-            mRootView.findViewById(R.id.jingyin).setOnClickListener(this);
-            mRootView.findViewById(R.id.full).setOnClickListener(this);
+            view.findViewById(R.id.play_url).setOnClickListener(this);
+            view.findViewById(R.id.play_path).setOnClickListener(this);
+            view.findViewById(R.id.play_json).setOnClickListener(this);
+            view.findViewById(R.id.start_button).setOnClickListener(this);
+            view.findViewById(R.id.pause_button).setOnClickListener(this);
+            view.findViewById(R.id.jingyin).setOnClickListener(this);
+            view.findViewById(R.id.full).setOnClickListener(this);
+            view.findViewById(R.id.apply_address_btn).setOnClickListener(this);
 
-            mSeekBar = new SeekBar(getActivity());
-            mSeekBar.setVisibility(View.INVISIBLE);
+            mAddressEdt = view.findViewById(R.id.address_edt);
+            String ip = SharedPreferencesUtil.getInstance(getContext()).get("ip");
+            if (!TextUtils.isEmpty(ip)) {
+                mAddressEdt.setText(ip);
+            }
+            mControlBarPanel = inflater.inflate(R.layout.video_media_controller, null, false);
+            mPositionTxt = mControlBarPanel.findViewById(R.id.position_txt);
+            mDurationTxt = mControlBarPanel.findViewById(R.id.duration_txt);
+            mSeekBar = mControlBarPanel.findViewById(R.id.seek_bar);
             mSeekBar.setOnSeekBarChangeListener(this);
+
             refreshPlayerView(false);
             showControlBar();
         }
@@ -93,23 +113,23 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
     }
 
     private boolean isControlBarShowing() {
-        return mSeekBar.getVisibility() == View.VISIBLE;
+        return mControlBarPanel.getVisibility() == View.VISIBLE;
     }
 
     private void showControlBar() {
         mHandler.removeCallbacksAndMessages(null);
-        mSeekBar.setVisibility(View.VISIBLE);
-        mHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                mSeekBar.setVisibility(View.INVISIBLE);
-            }
-        }, 3000);
+        mControlBarPanel.setVisibility(View.VISIBLE);
+//        mHandler.postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
+//                mControlBarPanel.setVisibility(View.INVISIBLE);
+//            }
+//        }, 3000);
     }
 
     private void hideControlBar() {
         mHandler.removeCallbacks(null);
-        mSeekBar.setVisibility(View.INVISIBLE);
+        mControlBarPanel.setVisibility(View.INVISIBLE);
     }
 
     @Override
@@ -133,6 +153,17 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
                 hideControlBar();
             } else {
                 showControlBar();
+            }
+        } else if (id == R.id.apply_address_btn) {
+            Button btn = (Button) v;
+            if ("确认".equals(btn.getText())) {
+                btn.setText("取消");
+                mAddress = mAddressEdt.getText().toString();
+                mAddressEdt.setEnabled(false);
+                SharedPreferencesUtil.getInstance(getContext()).put("ip", mAddress);
+            } else {
+                btn.setText("确认");
+                mAddressEdt.setEnabled(true);
             }
         }
     }
@@ -159,12 +190,12 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
             mSmallContainer.removeAllViews();
             mFullContainer.removeAllViews();
             mFullContainer.addView(mPlayerView);
-            mFullContainer.addView(mSeekBar, layoutParams);
+            mFullContainer.addView(mControlBarPanel, layoutParams);
         } else {
             mSmallContainer.removeAllViews();
             mFullContainer.removeAllViews();
             mSmallContainer.addView(mPlayerView);
-            mSmallContainer.addView(mSeekBar, layoutParams);
+            mSmallContainer.addView(mControlBarPanel, layoutParams);
         }
     }
 
@@ -204,7 +235,7 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
                 if (isLocal) {
                     items = LocalDataSource.getLocalFiles(getActivity());
                 } else {
-                    items = NetDataSource.getItems(getActivity());
+                    items = NetDataSource.getItems(getActivity(), mAddress);
                 }
                 runOnUiThread(new Runnable() {
                     @Override
@@ -239,13 +270,15 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
 
     public void onPlayPositionChanged(int position) {
         if (!mIsSeekTouch) {
-            mSeekBar.setProgress(position);
+            setPositionForView(position);
         }
     }
 
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-
+        if (fromUser) {
+            mPositionTxt.setText(TimeUtil.format(progress));
+        }
     }
 
     private boolean mIsSeekTouch;
@@ -264,9 +297,15 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
 
     public void onPrepared(int duration) {
         mSeekBar.setMax(duration);
+        mDurationTxt.setText(TimeUtil.format(duration));
     }
 
     public void onBufferingProgressChanged(int percent) {
         mSeekBar.setSecondaryProgress(percent);
+    }
+
+    private void setPositionForView(int position) {
+        mSeekBar.setProgress(position);
+        mPositionTxt.setText(TimeUtil.format(position));
     }
 }

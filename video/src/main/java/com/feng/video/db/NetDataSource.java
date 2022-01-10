@@ -17,8 +17,8 @@ import okhttp3.Response;
 
 public class NetDataSource {
 
-    public static List<Item> getItems(Context context) {
-        String url = "http://30.77.78.102:8080/list";
+    public static List<Item> getItems(Context context, String address) {
+        String url = "http://" + address + ":8080/list";
         OkHttpClient okHttpClient = new OkHttpClient();
         final Request request = new Request.Builder()
                 .url(url)

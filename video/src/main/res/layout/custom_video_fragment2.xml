@@ -87,6 +87,16 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
+                <EditText
+                    android:id="@+id/address_edt"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:hint="请输入IP"/>
+
+                <Button
+                    android:id="@+id/apply_address_btn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:text="确定IP"/>
+
                 <TextView
                     android:id="@+id/tv_position"
                     android:layout_width="wrap_content"

@@ -3,4 +3,4 @@ include ':app'
 rootProject.name = "fplayer"
 
 include ":library"
-project(":library").projectDir = file('/Users/feng/work/library-android')
+project(":library").projectDir = file('../library-android')
