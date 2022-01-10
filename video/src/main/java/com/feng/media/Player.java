@@ -21,4 +21,6 @@ public interface Player {
     void seekTo(int value);
 
     void setSpeed(float speed);
+
+    long getCurrentPosition();
 }

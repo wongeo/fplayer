@@ -125,10 +125,18 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
 
         @Override
         public boolean onSingleTapConfirmed(MotionEvent e) {//单击事件
-            if (isControlBarShowing()) {
-                hideControlBar();
+            if (e.getX() > mPlayerView.getWidth() / 2) {
+                //点击右侧
+                if (isControlBarShowing()) {
+                    hideControlBar();
+                } else {
+                    showControlBar();
+                }
             } else {
-                showControlBar();
+                //点击左侧
+                long position = mPlayer.getCurrentPosition();
+                position = position - 5000;
+                mPlayer.seekTo((int) position);
             }
             return super.onSingleTapConfirmed(e);
         }

@@ -17,6 +17,7 @@
                 android:id="@+id/small_screen_player_view_container"
                 android:layout_width="match_parent"
                 android:layout_height="220dp" />
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -90,12 +91,14 @@
                 <EditText
                     android:id="@+id/address_edt"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" android:hint="请输入IP"/>
+                    android:layout_height="wrap_content"
+                    android:hint="请输入IP" />
 
                 <Button
                     android:id="@+id/apply_address_btn"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" android:text="确定IP"/>
+                    android:layout_height="wrap_content"
+                    android:text="确定IP" />
 
                 <TextView
                     android:id="@+id/tv_position"
@@ -148,5 +151,4 @@
         android:layout_height="match_parent">
 
     </FrameLayout>
-
 </FrameLayout>

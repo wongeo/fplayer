@@ -107,6 +107,9 @@ public class FPlayer implements Player {
     }
 
     public void seekTo(int progress) {
+        if (progress < 0) {
+            progress = 0;
+        }
         mMediaPlayer.seekTo(progress);
         mMediaPlayer.start();
     }
@@ -121,6 +124,11 @@ public class FPlayer implements Player {
                 mMediaPlayer.setPlaybackParams(playbackParams);
             }
         }
+    }
+
+    @Override
+    public long getCurrentPosition() {
+        return mMediaPlayer.getCurrentPosition();
     }
 
     public void start() {
