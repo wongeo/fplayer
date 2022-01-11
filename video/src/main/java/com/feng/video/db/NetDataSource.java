@@ -3,11 +3,9 @@ package com.feng.video.db;
 import android.content.Context;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.feng.video.adapter.Item;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import okhttp3.Call;
@@ -29,15 +27,7 @@ public class NetDataSource {
             Response response = call.execute();
             String json = response.body().string();
             JSONObject jsonObject = JSON.parseObject(json);
-            JSONArray jsonArray = jsonObject.getJSONArray("data");
-            List<Item> items = new ArrayList<>();
-            for (int i = 0; i < jsonArray.size(); i++) {
-                JSONObject jsonItem = jsonArray.getJSONObject(i);
-                String name = jsonItem.getString("name");
-                String uri = jsonItem.getString("url");
-                Item item = new Item(name, uri);
-                items.add(item);
-            }
+            List<Item> items = JSON.parseArray(jsonObject.getString("data"), Item.class);
             return items;
         } catch (Exception e) {
             e.printStackTrace();
