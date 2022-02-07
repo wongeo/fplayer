@@ -126,25 +126,17 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
      * 返回手势的点击区域
      *
      * @param e 手势
-     * @return 1, 2, 3, 4, 5, 6
+     * @return 1, 2, 3
      */
     private int touchRect(MotionEvent e) {
         int width = mPlayerView.getWidth();
-        int height = mPlayerView.getHeight();
         float tw = width / 3f;
-        float th = height / 2f;
-        if (e.getX() < tw && e.getY() < th) {
+        if (e.getX() < tw) {
             return 1;
-        } else if (e.getY() < th && e.getX() > tw && e.getX() < width - tw) {
+        } else if (e.getX() > tw && e.getX() < width - tw) {
             return 2;
-        } else if (e.getY() < th && e.getX() > width - tw) {
+        } else if (e.getX() > width - tw) {
             return 3;
-        } else if (e.getY() > th && e.getX() < th) {
-            return 4;
-        } else if (e.getY() > th && e.getX() > tw && e.getX() < width - tw) {
-            return 5;
-        } else if (e.getY() > th && e.getX() > width - tw) {
-            return 6;
         }
         return 0;
     }
@@ -156,12 +148,7 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
 
         @Override
         public boolean onSingleTapConfirmed(MotionEvent e) {//单击事件
-            int width = mPlayerView.getWidth();
-            int height = mPlayerView.getHeight();
-            float tw = width / 3f;
-            float th = height / 2f;
-
-            if (touchRect(e) == 5) {//单击显示播控栏区域
+            if (touchRect(e) == 2) {//单击显示播控栏区域
                 //点击右侧
                 if (isControlBarShowing()) {
                     hideControlBar();
@@ -171,12 +158,12 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
             } else {
                 //进行快速seek
                 long position = mSeekBar.getProgress();
-                if (touchRect(e) == 1 || touchRect(e) == 4) {
+                if (touchRect(e) == 1) {
                     //快退N秒
-                    position -= 5000;
-                } else if (touchRect(e) == 3 || touchRect(e) == 6) {
+                    position -= 10000;
+                } else if (touchRect(e) == 3) {
                     //快进N秒
-                    position += 5000;
+                    position += 10000;
                 }
                 mPlayer.seekTo((int) position);
                 mSeekBar.setProgress((int) position);
@@ -203,17 +190,17 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
         return mControlBarPanel.getVisibility() == View.VISIBLE;
     }
 
+    /**
+     * 显示播控栏
+     */
     private void showControlBar() {
         mHandler.removeCallbacksAndMessages(null);
         mControlBarPanel.setVisibility(View.VISIBLE);
-//        mHandler.postDelayed(new Runnable() {
-//            @Override
-//            public void run() {
-//                mControlBarPanel.setVisibility(View.INVISIBLE);
-//            }
-//        }, 3000);
     }
 
+    /**
+     * 隐藏播控栏
+     */
     private void hideControlBar() {
         mHandler.removeCallbacks(null);
         mControlBarPanel.setVisibility(View.INVISIBLE);
@@ -263,6 +250,11 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
         activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
     }
 
+    /**
+     * 刷新UI，重置全屏非全屏
+     *
+     * @param isFull 是否是全屏
+     */
     public void refreshPlayerView(boolean isFull) {
         FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
         layoutParams.gravity = Gravity.BOTTOM;
