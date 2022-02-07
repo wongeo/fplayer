@@ -96,6 +96,7 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
             view.findViewById(R.id.apply_address_btn).setOnClickListener(this);
 
             mAddressEdt = view.findViewById(R.id.address_edt);
+            mAddressEdt.clearFocus();
             String ip = SharedPreferencesUtil.getInstance(getContext()).get("ip");
             if (!TextUtils.isEmpty(ip)) {
                 mAddressEdt.setText(ip);
@@ -120,12 +121,47 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
         return mGestureDetector.onTouchEvent(event);
     }
 
-    private final GestureDetector mGestureDetector = new GestureDetector(getActivity(), new GestureDetector.SimpleOnGestureListener() {
 
+    /**
+     * 返回手势的点击区域
+     *
+     * @param e 手势
+     * @return 1, 2, 3, 4, 5, 6
+     */
+    private int touchRect(MotionEvent e) {
+        int width = mPlayerView.getWidth();
+        int height = mPlayerView.getHeight();
+        float tw = width / 3f;
+        float th = height / 2f;
+        if (e.getX() < tw && e.getY() < th) {
+            return 1;
+        } else if (e.getY() < th && e.getX() > tw && e.getX() < width - tw) {
+            return 2;
+        } else if (e.getY() < th && e.getX() > width - tw) {
+            return 3;
+        } else if (e.getY() > th && e.getX() < th) {
+            return 4;
+        } else if (e.getY() > th && e.getX() > tw && e.getX() < width - tw) {
+            return 5;
+        } else if (e.getY() > th && e.getX() > width - tw) {
+            return 6;
+        }
+        return 0;
+    }
+
+    /**
+     * 手势
+     */
+    private final GestureDetector mGestureDetector = new GestureDetector(getActivity(), new GestureDetector.SimpleOnGestureListener() {
 
         @Override
         public boolean onSingleTapConfirmed(MotionEvent e) {//单击事件
-            if (e.getX() > mPlayerView.getWidth() / 2) {
+            int width = mPlayerView.getWidth();
+            int height = mPlayerView.getHeight();
+            float tw = width / 3f;
+            float th = height / 2f;
+
+            if (touchRect(e) == 5) {//单击显示播控栏区域
                 //点击右侧
                 if (isControlBarShowing()) {
                     hideControlBar();
@@ -133,28 +169,33 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
                     showControlBar();
                 }
             } else {
-                //点击左侧
-                long position = mPlayer.getCurrentPosition();
-                position = position - 5000;
+                //进行快速seek
+                long position = mSeekBar.getProgress();
+                if (touchRect(e) == 1 || touchRect(e) == 4) {
+                    //快退N秒
+                    position -= 5000;
+                } else if (touchRect(e) == 3 || touchRect(e) == 6) {
+                    //快进N秒
+                    position += 5000;
+                }
                 mPlayer.seekTo((int) position);
+                mSeekBar.setProgress((int) position);
             }
             return super.onSingleTapConfirmed(e);
         }
 
         @Override
         public boolean onDoubleTap(MotionEvent e) {//双击事件
-            State state = mPlayer.getState();
-            if (state == State.PLAYING) {
-                mPlayer.pause();
-            } else if (state == State.PAUSE) {
-                mPlayer.start();
+            if (touchRect(e) == 5) {
+                State state = mPlayer.getState();
+                if (state == State.PLAYING) {
+                    mPlayer.pause();
+                } else if (state == State.PAUSE) {
+                    mPlayer.start();
+                }
+                return true;
             }
-            return super.onDoubleTap(e);
-        }
-
-        @Override
-        public boolean onDoubleTapEvent(MotionEvent e) {
-            return super.onDoubleTapEvent(e);
+            return false;
         }
     });
 
@@ -283,7 +324,7 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
                     @Override
                     public void run() {
                         if (items == null || items.size() == 0) {
-                            Toast.makeText(getActivity(), "存储卡根目录没有视频文件", Toast.LENGTH_LONG).show();
+                            Toast.makeText(getActivity(), "获取数据为空", Toast.LENGTH_LONG).show();
                             return;
                         }
                         builder.setAdapter(new FileAdapter(getActivity(), items), new DialogInterface.OnClickListener() {

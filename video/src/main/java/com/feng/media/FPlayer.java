@@ -4,10 +4,13 @@ import android.content.Context;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.PlaybackParams;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.view.Surface;
+
+import androidx.annotation.RequiresApi;
 
 public class FPlayer implements Player {
 
@@ -106,11 +109,12 @@ public class FPlayer implements Player {
         mPlayStateCallback = playStateCallback;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     public void seekTo(int progress) {
         if (progress < 0) {
             progress = 0;
         }
-        mMediaPlayer.seekTo(progress);
+        mMediaPlayer.seekTo(progress, MediaPlayer.SEEK_CLOSEST);
         mMediaPlayer.start();
     }
 
