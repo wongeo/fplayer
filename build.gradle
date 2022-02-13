@@ -1,7 +1,14 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
+    ext {
+        maven = 'http://maven.aliyun.com/nexus/content/groups/public/'
+        maven2 = 'http://maven.aliyun.com/nexus/content/repositories/jcenter'
+        maven3 = 'https://gitee.com/wongeo/repo/raw/main/'
+    }
     repositories {
-        maven { url 'https://raw.githubusercontent.com/wongeo/repo/main/' }
+        maven { url rootProject.ext.maven }
+        maven { url rootProject.ext.maven2 }
+        maven { url rootProject.ext.maven3 }
         google()
         jcenter()
     }
@@ -15,7 +22,9 @@ buildscript {
 
 allprojects {
     repositories {
-        maven { url 'https://raw.githubusercontent.com/wongeo/repo/main/' }
+        maven { url rootProject.ext.maven }
+        maven { url rootProject.ext.maven2 }
+        maven { url rootProject.ext.maven3 }
         google()
         jcenter()
     }

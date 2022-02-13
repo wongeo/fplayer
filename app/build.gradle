@@ -41,5 +41,5 @@ dependencies {
     implementation project(path: ':video')
 
     //    compile(project(":library")) { transitive = false }
-    implementation 'com.feng:library-android:1.0.0-SNAPSHOT'
+    implementation 'com.feng:library-android:1.0.1-SNAPSHOT'
 }
