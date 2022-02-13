@@ -3,7 +3,7 @@ plugins {
 }
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 31
     buildToolsVersion "31.0.0"
 
     defaultConfig {
@@ -29,7 +29,7 @@ android {
 }
 
 dependencies {
-    provided fileTree(dir: 'libs', include: ['*.aar'])
+    implementation fileTree(dir: 'libs', include: ['*.aar'])
     implementation 'androidx.appcompat:appcompat:1.3.1'
     implementation 'com.google.android.material:material:1.4.0'
     implementation 'org.jetbrains:annotations:15.0'
@@ -38,5 +38,6 @@ dependencies {
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
-    compile(project(":library")) { transitive = false }
+//    compile(project(":library")) { transitive = false }
+    implementation 'com.feng:library-android:1.0.0-SNAPSHOT'
 }

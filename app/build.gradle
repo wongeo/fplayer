@@ -3,7 +3,7 @@ plugins {
 }
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 31
     buildToolsVersion "29.0.0"
 
     defaultConfig {
@@ -39,5 +39,7 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
 
     implementation project(path: ':video')
-    compile(project(":library")) { transitive = false }
+
+    //    compile(project(":library")) { transitive = false }
+    implementation 'com.feng:library-android:1.0.0-SNAPSHOT'
 }

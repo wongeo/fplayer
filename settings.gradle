@@ -2,5 +2,5 @@ include ':video'
 include ':app'
 rootProject.name = "fplayer"
 
-include ":library"
-project(":library").projectDir = file('../library-android')
+//include ":library"
+//project(":library").projectDir = file('../library-android')
