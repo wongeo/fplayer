@@ -19,6 +19,7 @@ import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
+import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -31,9 +32,11 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
+import com.feng.media.FPlayer;
 import com.feng.media.Player;
 import com.feng.media.State;
 import com.feng.mvp.BaseFragment;
+import com.feng.resize.ResizeView;
 import com.feng.video.R;
 import com.feng.video.adapter.FileAdapter;
 import com.feng.video.adapter.Item;
@@ -41,7 +44,6 @@ import com.feng.video.db.LocalDataSource;
 import com.feng.video.db.NetDataSource;
 import com.feng.video.util.SharedPreferencesUtil;
 import com.feng.video.util.TimeUtil;
-import com.feng.video.view.CustomVideoView;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -54,7 +56,7 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
 
     private final static String TAG = "CustomVideoFragment";
     private CustomVideoPresenter mPresenter;
-    public CustomVideoView mPlayerView;
+    public ResizeView mPlayerView;
     private Player mPlayer;
     private View mRootView;
     private final Handler mHandler = new Handler(Looper.getMainLooper());
@@ -71,6 +73,10 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
         setPresenter(mPresenter);
     }
 
+    public Player getPlayer() {
+        return mPlayer;
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NotNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -81,11 +87,15 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
             mSmallContainer = view.findViewById(R.id.small_screen_player_view_container);
             mFullContainer = view.findViewById(R.id.full_screen_player_view_container);
             mPipContainer = view.findViewById(R.id.pip_screen_player_view_container);
-            mPlayerView = new CustomVideoView(getActivity());
-            mPlayerView.setOnClickListener(this);
+
+            //初始化播放器和surface并且进行绑定
+            mPlayer = new FPlayer(getContext());
+            mPlayerView = new ResizeView(getContext());
+            View videoView = new TextureView(getContext());
+            mPlayerView.bind(mPlayer, videoView);
+
             mPlayerView.setOnLongClickListener(this);
             mPlayerView.setOnTouchListener(this);
-            mPlayer = mPlayerView.getPlayer();
 
             //播放器控制按钮
             view.findViewById(R.id.play_url).setOnClickListener(this);
@@ -238,8 +248,6 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
             goFullScreen();
         } else if (id == R.id.pip) {
             enterPipMode();
-        } else if (mPlayerView == v) {
-
         } else if (id == R.id.apply_address_btn) {
             Button btn = (Button) v;
             if ("确认".equals(btn.getText())) {

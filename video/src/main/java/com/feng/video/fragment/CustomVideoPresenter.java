@@ -22,7 +22,7 @@ public class CustomVideoPresenter extends BasePresenter<CustomVideoFragment> {
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
-        mPlayer = mView.mPlayerView.getPlayer();
+        mPlayer = mView.getPlayer();
         mPlayer.setPlayStateCallback(mPlayStateCallback);
     }
 
