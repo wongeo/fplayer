@@ -8,7 +8,6 @@ out/
 target/
 captures/
 project.properties
-gradle.properties
 *.iml
 local.properties
 /weekly.sh
