@@ -50,7 +50,6 @@ import java.util.List;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 
-@RequiresApi(api = Build.VERSION_CODES.O)
 public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> implements View.OnTouchListener, View.OnClickListener, View.OnLongClickListener, SeekBar.OnSeekBarChangeListener {
 
     private final static String TAG = "CustomVideoFragment";
@@ -59,7 +58,7 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
     private Player mPlayer;
     private View mRootView;
     private final Handler mHandler = new Handler(Looper.getMainLooper());
-    //播放器父容器
+    //播放器父容器,小窗口容器，全屏容器，pip小窗容器
     private FrameLayout mSmallContainer, mFullContainer, mPipContainer;
     private SeekBar mSeekBar;
     private EditText mAddressEdt;
@@ -177,16 +176,27 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
 
         @Override
         public boolean onDoubleTap(MotionEvent e) {//双击事件
-            if (touchRect(e) == 5) {
+            if (touchRect(e) == 2) {
                 State state = mPlayer.getState();
                 if (state == State.PLAYING) {
                     mPlayer.pause();
                 } else if (state == State.PAUSE) {
                     mPlayer.start();
                 }
-                return true;
+            }else {
+                //进行快速seek
+                long position = mSeekBar.getProgress();
+                if (touchRect(e) == 1) {
+                    //快退N秒
+                    position -= 10000;
+                } else if (touchRect(e) == 3) {
+                    //快进N秒
+                    position += 10000;
+                }
+                mPlayer.seekTo((int) position);
+                mSeekBar.setProgress((int) position);
             }
-            return false;
+            return true;
         }
     });
 
@@ -227,7 +237,7 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
         } else if (id == R.id.full) {
             goFullScreen();
         } else if (id == R.id.pip) {
-            enterPipMode(new Rational(16, 9));
+            enterPipMode();
         } else if (mPlayerView == v) {
 
         } else if (id == R.id.apply_address_btn) {
@@ -418,13 +428,14 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
 
     private final PictureInPictureParams.Builder mPictureInPictureParamsBuilder = new PictureInPictureParams.Builder();
 
-    public int enterPipMode(Rational aspectRatio) {
+    public int enterPipMode() {
         Log.d(TAG, "enterPipMode");
         if (!isSupportPip()) {
             Log.d(TAG, "do not support pip, just return");
             return -1;
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Rational aspectRatio = new Rational(16, 9);
             // Calculate the aspect ratio of the PiP screen.
             mPictureInPictureParamsBuilder.setAspectRatio(aspectRatio).build();
             Activity activity = getActivity();
