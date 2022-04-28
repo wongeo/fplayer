@@ -2,14 +2,18 @@ package com.feng.video.fragment;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.PictureInPictureParams;
 import android.content.DialogInterface;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Log;
+import android.util.Rational;
 import android.util.TypedValue;
 import android.view.GestureDetector;
 import android.view.Gravity;
@@ -25,6 +29,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 
 import com.feng.media.Player;
 import com.feng.media.State;
@@ -45,19 +50,17 @@ import java.util.List;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 
-/**
- * Created by 巫鸦 on 2017/11/9.
- */
-
+@RequiresApi(api = Build.VERSION_CODES.O)
 public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> implements View.OnTouchListener, View.OnClickListener, View.OnLongClickListener, SeekBar.OnSeekBarChangeListener {
 
+    private final static String TAG = "CustomVideoFragment";
     private CustomVideoPresenter mPresenter;
     public CustomVideoView mPlayerView;
     private Player mPlayer;
     private View mRootView;
     private final Handler mHandler = new Handler(Looper.getMainLooper());
     //播放器父容器
-    private FrameLayout mSmallContainer, mFullContainer;
+    private FrameLayout mSmallContainer, mFullContainer, mPipContainer;
     private SeekBar mSeekBar;
     private EditText mAddressEdt;
     private String mAddress;
@@ -76,9 +79,9 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
             mRootView = inflater.inflate(R.layout.custom_video_fragment2, container, false);
             View view = mRootView;
             //播放器父容器
-            mSmallContainer = mRootView.findViewById(R.id.small_screen_player_view_container);
-            mFullContainer = mRootView.findViewById(R.id.full_screen_player_view_container);
-
+            mSmallContainer = view.findViewById(R.id.small_screen_player_view_container);
+            mFullContainer = view.findViewById(R.id.full_screen_player_view_container);
+            mPipContainer = view.findViewById(R.id.pip_screen_player_view_container);
             mPlayerView = new CustomVideoView(getActivity());
             mPlayerView.setOnClickListener(this);
             mPlayerView.setOnLongClickListener(this);
@@ -93,6 +96,7 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
             view.findViewById(R.id.pause_button).setOnClickListener(this);
             view.findViewById(R.id.jingyin).setOnClickListener(this);
             view.findViewById(R.id.full).setOnClickListener(this);
+            view.findViewById(R.id.pip).setOnClickListener(this);
             view.findViewById(R.id.apply_address_btn).setOnClickListener(this);
 
             mAddressEdt = view.findViewById(R.id.address_edt);
@@ -222,6 +226,8 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
             mPresenter.pause();
         } else if (id == R.id.full) {
             goFullScreen();
+        } else if (id == R.id.pip) {
+            enterPipMode(new Rational(16, 9));
         } else if (mPlayerView == v) {
 
         } else if (id == R.id.apply_address_btn) {
@@ -261,14 +267,15 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
         float pixel = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 40, this.getResources().getDisplayMetrics());
         layoutParams.bottomMargin = (int) pixel;
 
+        ViewGroup viewGroup = (ViewGroup) mPlayerView.getParent();
+        if (viewGroup != null) {
+            viewGroup.removeAllViews();
+        }
+
         if (isFull) {
-            mSmallContainer.removeAllViews();
-            mFullContainer.removeAllViews();
             mFullContainer.addView(mPlayerView);
             mFullContainer.addView(mControlBarPanel, layoutParams);
         } else {
-            mSmallContainer.removeAllViews();
-            mFullContainer.removeAllViews();
             mSmallContainer.addView(mPlayerView);
             mSmallContainer.addView(mControlBarPanel, layoutParams);
         }
@@ -281,10 +288,12 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            refreshPlayerView(true);
-        } else {
-            refreshPlayerView(false);
+        if (!isInPictureInPictureMode) {
+            if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                refreshPlayerView(true);
+            } else {
+                refreshPlayerView(false);
+            }
         }
     }
 
@@ -388,5 +397,75 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
     public boolean onLongClick(View view) {
         mPlayer.setSpeed(3);
         return false;
+    }
+
+    private boolean isInPictureInPictureMode;
+
+    @Override
+    public void onPictureInPictureModeChanged(boolean isInPictureInPictureMode) {
+        super.onPictureInPictureModeChanged(isInPictureInPictureMode);
+        this.isInPictureInPictureMode = isInPictureInPictureMode;
+        ViewGroup viewGroup = (ViewGroup) mPlayerView.getParent();
+        if (viewGroup != null) {
+            viewGroup.removeAllViews();
+        }
+        if (isInPictureInPictureMode) {
+            mPipContainer.addView(mPlayerView);
+        } else {
+            mSmallContainer.addView(mPlayerView);
+        }
+    }
+
+    private final PictureInPictureParams.Builder mPictureInPictureParamsBuilder = new PictureInPictureParams.Builder();
+
+    public int enterPipMode(Rational aspectRatio) {
+        Log.d(TAG, "enterPipMode");
+        if (!isSupportPip()) {
+            Log.d(TAG, "do not support pip, just return");
+            return -1;
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // Calculate the aspect ratio of the PiP screen.
+            mPictureInPictureParamsBuilder.setAspectRatio(aspectRatio).build();
+            Activity activity = getActivity();
+            if (activity != null) {
+                boolean pipRet = false;
+                try {
+                    pipRet = activity.enterPictureInPictureMode(mPictureInPictureParamsBuilder.build());
+                } catch (Throwable ex) {
+                    ex.printStackTrace();
+                }
+
+                //需要设计给icon
+//                updateActions();
+                if (pipRet) {
+                    return 0;
+                }
+            }
+        }
+        return -1;
+    }
+
+    public boolean isSupportPip() {
+        boolean ret = false;
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            Log.e(TAG, "Android level lower than Android 8.0, do not support PIP");
+            return ret;
+        }
+        Activity activity = getActivity();
+        if (activity != null) {
+            PackageManager pm = activity.getApplicationContext().getPackageManager();
+            if (pm != null) {
+                ret = pm.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE);
+                if (!ret) {
+                    Log.e(TAG, "PackageManager hasSystemFeature return false, do not support PIP");
+                    return ret;
+                }
+            }
+        } else {
+            return ret;
+        }
+        Log.d(TAG, "isSupportPip: " + ret);
+        return ret;
     }
 }
