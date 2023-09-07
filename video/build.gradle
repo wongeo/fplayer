@@ -36,6 +36,5 @@ dependencies {
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
-//    compile(project(":library")) { transitive = false }
-    implementation 'com.feng:library-android:1.0.1-SNAPSHOT'
+    implementation 'com.feng:library-android:1.0.2-SNAPSHOT'
 }

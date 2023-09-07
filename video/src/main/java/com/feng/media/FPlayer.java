@@ -19,7 +19,7 @@ public class FPlayer implements Player {
 
     private final MediaPlayer mMediaPlayer;
     private int mProgress;
-    private Handler mHandler;
+    private final Handler mHandler;
     private float mSpeed;
 
     public FPlayer(Context context) {

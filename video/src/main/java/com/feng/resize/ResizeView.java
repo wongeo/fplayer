@@ -86,7 +86,7 @@ public class ResizeView extends FrameLayout implements IResize {
 
         removeAllViews();
         addView(mVideoView);
-        setBackgroundColor(Color.TRANSPARENT);
+        setBackgroundColor(Color.BLACK);
     }
 
     @Override

@@ -50,7 +50,14 @@ public class CustomVideoPresenter extends BasePresenter<CustomVideoFragment> {
 
         @Override
         public void onPlayerStateChanged(State oldState, State newState) {
-
+            switch (newState) {
+                case PLAYING:
+                    mView.onPlayerStart();
+                    break;
+                case PAUSE:
+                    mView.onPlayerPause();
+                    break;
+            }
         }
 
         @Override
@@ -77,8 +84,12 @@ public class CustomVideoPresenter extends BasePresenter<CustomVideoFragment> {
         mPlayer.pause();
     }
 
-    public void start() {
-        mPlayer.start();
+    public void startOrPause() {
+        if (mPlayer.getState() == State.PLAYING) {
+            mPlayer.pause();
+        } else if (mPlayer.getState() == State.PAUSE) {
+            mPlayer.start();
+        }
     }
 
     public void seekTo(int value) {

@@ -3,15 +3,18 @@ package com.feng.video.fragment;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.PictureInPictureParams;
-import android.content.DialogInterface;
+import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.net.DhcpInfo;
+import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
+import android.text.format.Formatter;
 import android.util.Log;
 import android.util.Rational;
 import android.util.TypedValue;
@@ -30,23 +33,25 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 
 import com.feng.media.FPlayer;
 import com.feng.media.Player;
 import com.feng.media.State;
 import com.feng.mvp.BaseFragment;
 import com.feng.resize.ResizeView;
+import com.feng.util.DensityUtils;
 import com.feng.video.R;
 import com.feng.video.adapter.FileAdapter;
 import com.feng.video.adapter.Item;
 import com.feng.video.db.LocalDataSource;
 import com.feng.video.db.NetDataSource;
+import com.feng.video.util.DiscoverNetIpUtil;
 import com.feng.video.util.SharedPreferencesUtil;
 import com.feng.video.util.TimeUtil;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.net.InetAddress;
 import java.util.List;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
@@ -55,7 +60,7 @@ import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> implements View.OnTouchListener, View.OnClickListener, View.OnLongClickListener, SeekBar.OnSeekBarChangeListener {
 
     private final static String TAG = "CustomVideoFragment";
-    private CustomVideoPresenter mPresenter;
+    private final CustomVideoPresenter mPresenter;
     public ResizeView mPlayerView;
     private Player mPlayer;
     private View mRootView;
@@ -65,7 +70,7 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
     private SeekBar mSeekBar;
     private EditText mAddressEdt;
     private String mAddress;
-    private View mControlBarPanel;
+    private Button mStartOrPauseButton;
     private TextView mPositionTxt, mDurationTxt;
 
     public CustomVideoFragment() {
@@ -98,11 +103,10 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
             mPlayerView.setOnTouchListener(this);
 
             //播放器控制按钮
-            view.findViewById(R.id.play_url).setOnClickListener(this);
             view.findViewById(R.id.play_path).setOnClickListener(this);
             view.findViewById(R.id.play_json).setOnClickListener(this);
-            view.findViewById(R.id.start_button).setOnClickListener(this);
-            view.findViewById(R.id.pause_button).setOnClickListener(this);
+            mStartOrPauseButton = view.findViewById(R.id.start_or_pause_btn);
+            mStartOrPauseButton.setOnClickListener(this);
             view.findViewById(R.id.jingyin).setOnClickListener(this);
             view.findViewById(R.id.full).setOnClickListener(this);
             view.findViewById(R.id.pip).setOnClickListener(this);
@@ -114,10 +118,9 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
             if (!TextUtils.isEmpty(ip)) {
                 mAddressEdt.setText(ip);
             }
-            mControlBarPanel = inflater.inflate(R.layout.video_media_controller, null, false);
-            mPositionTxt = mControlBarPanel.findViewById(R.id.position_txt);
-            mDurationTxt = mControlBarPanel.findViewById(R.id.duration_txt);
-            mSeekBar = mControlBarPanel.findViewById(R.id.seek_bar);
+            mPositionTxt = view.findViewById(R.id.position_txt);
+            mDurationTxt = view.findViewById(R.id.duration_txt);
+            mSeekBar = view.findViewById(R.id.seek_bar);
             mSeekBar.setOnSeekBarChangeListener(this);
 
             refreshPlayerView(false);
@@ -163,11 +166,7 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
         public boolean onSingleTapConfirmed(MotionEvent e) {//单击事件
             if (touchRect(e) == 2) {//单击显示播控栏区域
                 //点击右侧
-                if (isControlBarShowing()) {
-                    hideControlBar();
-                } else {
-                    showControlBar();
-                }
+
             } else {
                 //进行快速seek
                 long position = mSeekBar.getProgress();
@@ -193,7 +192,7 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
                 } else if (state == State.PAUSE) {
                     mPlayer.start();
                 }
-            }else {
+            } else {
                 //进行快速seek
                 long position = mSeekBar.getProgress();
                 if (touchRect(e) == 1) {
@@ -210,16 +209,11 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
         }
     });
 
-    private boolean isControlBarShowing() {
-        return mControlBarPanel.getVisibility() == View.VISIBLE;
-    }
-
     /**
      * 显示播控栏
      */
     private void showControlBar() {
         mHandler.removeCallbacksAndMessages(null);
-        mControlBarPanel.setVisibility(View.VISIBLE);
     }
 
     /**
@@ -227,23 +221,17 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
      */
     private void hideControlBar() {
         mHandler.removeCallbacks(null);
-        mControlBarPanel.setVisibility(View.INVISIBLE);
     }
 
     @Override
     public void onClick(View v) {
         int id = v.getId();
-        if (id == R.id.play_url) {
-            String url = "https://cloud.video.taobao.com/play/u/1745440806/p/1/d/hd/e/6/t/1/50240790066.mp4";
-            mPresenter.playWithUri(url);
-        } else if (id == R.id.play_path) {
+        if (id == R.id.play_path) {
             dialogList(true);
         } else if (id == R.id.play_json) {
             dialogList(false);
-        } else if (id == R.id.pause_button) {
-            mPresenter.pause();
-        } else if (id == R.id.start_button) {
-            mPresenter.pause();
+        } else if (id == R.id.start_or_pause_btn) {
+            mPresenter.startOrPause();
         } else if (id == R.id.full) {
             goFullScreen();
         } else if (id == R.id.pip) {
@@ -251,10 +239,11 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
         } else if (id == R.id.apply_address_btn) {
             Button btn = (Button) v;
             if ("确认".equals(btn.getText())) {
-                btn.setText("取消");
-                mAddress = mAddressEdt.getText().toString();
-                mAddressEdt.setEnabled(false);
-                SharedPreferencesUtil.getInstance(getContext()).put("ip", mAddress);
+                ss();
+//                btn.setText("取消");
+//                mAddress = mAddressEdt.getText().toString();
+//                mAddressEdt.setEnabled(false);
+//                SharedPreferencesUtil.getInstance(getContext()).put("ip", mAddress);
             } else {
                 btn.setText("确认");
                 mAddressEdt.setEnabled(true);
@@ -271,7 +260,7 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
     public void goSmallScreen() {
         Activity activity = getActivity();
         assert activity != null;
-        activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
     }
 
     /**
@@ -282,7 +271,7 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
     public void refreshPlayerView(boolean isFull) {
         FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
         layoutParams.gravity = Gravity.BOTTOM;
-        float pixel = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 40, this.getResources().getDisplayMetrics());
+        float pixel = DensityUtils.dpToPx(getContext(), 40);
         layoutParams.bottomMargin = (int) pixel;
 
         ViewGroup viewGroup = (ViewGroup) mPlayerView.getParent();
@@ -292,10 +281,8 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
 
         if (isFull) {
             mFullContainer.addView(mPlayerView);
-            mFullContainer.addView(mControlBarPanel, layoutParams);
         } else {
             mSmallContainer.addView(mPlayerView);
-            mSmallContainer.addView(mControlBarPanel, layoutParams);
         }
     }
 
@@ -324,40 +311,37 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
         return super.onBackPress();
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        mPlayer.pause();
+    }
+
     /**
      * 播放本地视频
      */
     private void dialogList(boolean isLocal) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext(), 0);
         builder.setTitle("视频列表");
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                List<Item> items;
-                if (isLocal) {
-                    items = LocalDataSource.getLocalFiles(getActivity());
-                } else {
-                    items = NetDataSource.getItems(getActivity(), mAddress);
-                }
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (items == null || items.size() == 0) {
-                            Toast.makeText(getActivity(), "获取数据为空", Toast.LENGTH_LONG).show();
-                            return;
-                        }
-                        builder.setAdapter(new FileAdapter(getActivity(), items), new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
-                                Item file = items.get(which);
-                                mPresenter.playWithUri(file.getUri());
-                            }
-                        });
-                        builder.create().show();
-                    }
-                });
+        new Thread(() -> {
+            List<Item> items;
+            if (isLocal) {
+                items = LocalDataSource.getLocalFiles(requireActivity());
+            } else {
+                items = NetDataSource.getItems(getActivity(), mAddress);
             }
+            runOnUiThread(() -> {
+                if (items == null || items.size() == 0) {
+                    Toast.makeText(getActivity(), "获取数据为空", Toast.LENGTH_LONG).show();
+                    return;
+                }
+                builder.setAdapter(new FileAdapter(getActivity(), items), (dialog, which) -> {
+                    dialog.dismiss();
+                    Item file = items.get(which);
+                    mPresenter.playWithUri(file.getUri());
+                });
+                builder.create().show();
+            });
         }).start();
 
     }
@@ -374,6 +358,16 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
         if (!mIsSeekTouch) {
             setPositionForView(position);
         }
+    }
+
+    public void onPlayerStart() {
+        runOnUiThread(() -> {
+            mStartOrPauseButton.setText("暂停");
+        });
+    }
+
+    public void onPlayerPause() {
+        runOnUiThread(() -> mStartOrPauseButton.setText("开始"));
     }
 
     @Override
@@ -486,5 +480,8 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
         }
         Log.d(TAG, "isSupportPip: " + ret);
         return ret;
+    }
+
+    private void ss() {
     }
 }
