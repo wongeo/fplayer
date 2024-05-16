@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.View;
 
 import com.feng.media.IPlayStateCallback;
+import com.feng.media.PlayInfo;
 import com.feng.media.Player;
 import com.feng.media.State;
 import com.feng.mvp.BasePresenter;
@@ -61,8 +62,8 @@ public class CustomVideoPresenter extends BasePresenter<CustomVideoFragment> {
         }
 
         @Override
-        public void onPrepared(int duration) {
-            mView.onPrepared(duration);
+        public void onPrepared(PlayInfo playInfo) {
+            mView.onPrepared(playInfo);
         }
 
         @Override

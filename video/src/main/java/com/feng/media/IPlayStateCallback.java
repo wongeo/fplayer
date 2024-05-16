@@ -11,7 +11,7 @@ public interface IPlayStateCallback {
 
     void onPlayerStateChanged(State oldState, State newState);
 
-    void onPrepared(int duration);
+    void onPrepared(PlayInfo playInfo);
 
     void onPlayPositionChanged(float percent, long position, long duration);
 

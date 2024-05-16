@@ -41,7 +41,8 @@ public class FPlayer implements Player {
         mMediaPlayer.setOnPreparedListener(mp -> {
             mState = State.PREPARED;
             if (mPlayStateCallback != null) {
-                mPlayStateCallback.onPrepared(mp.getDuration());
+                PlayInfo playInfo = new PlayInfo(mp.getDuration());
+                mPlayStateCallback.onPrepared(playInfo);
             }
             int width = mp.getVideoWidth();
             int height = mp.getVideoHeight();

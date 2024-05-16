@@ -20,6 +20,7 @@ public class MainActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         requestAllPermissions();
         startFragment(new CustomVideoFragment());
+        User user = new User("", 33);
     }
 
     @Override

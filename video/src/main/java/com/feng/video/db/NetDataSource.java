@@ -3,9 +3,11 @@ package com.feng.video.db;
 import android.content.Context;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.feng.video.adapter.Item;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -19,6 +21,7 @@ public class NetDataSource {
             .readTimeout(3, TimeUnit.SECONDS)
             .connectTimeout(3, TimeUnit.SECONDS)
             .build();
+
     public static List<Item> getItems(Context context, String address) {
         String url = "http://" + address + ":3000";
         final Request request = new Request.Builder()
@@ -30,7 +33,14 @@ public class NetDataSource {
             Response response = call.execute();
             String json = response.body().string();
             JSONObject jsonObject = JSON.parseObject(json);
-            List<Item> items = JSON.parseArray(jsonObject.getString("data"), Item.class);
+            JSONArray jsonArray = jsonObject.getJSONArray("data");
+            List<Item> items = new ArrayList<>();
+            for (int i = 0; i < jsonArray.size(); i++) {
+                jsonObject = jsonArray.getJSONObject(i);
+                if (jsonObject.getString("type").equals("mp4")) {
+                    items.add(new Item(jsonObject.getString("name"), jsonObject.getString("url")));
+                }
+            }
             return items;
         } catch (Exception e) {
             e.printStackTrace();

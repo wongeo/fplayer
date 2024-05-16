@@ -35,6 +35,7 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 
 import com.feng.media.FPlayer;
+import com.feng.media.PlayInfo;
 import com.feng.media.Player;
 import com.feng.media.State;
 import com.feng.mvp.BaseFragment;
@@ -54,6 +55,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.net.InetAddress;
 import java.util.List;
+import java.util.Objects;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
@@ -67,13 +69,13 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
     private View mRootView;
     private final Handler mHandler = new Handler(Looper.getMainLooper());
     //播放器父容器,小窗口容器，全屏容器，pip小窗容器
-    private FrameLayout mSmallContainer, mFullContainer, mPipContainer;
+    private FrameLayout mSmallContainer, mFullContainer, mPipContainer, mPlayerContainer;
     private SeekBar mSeekBar;
     private SeekPanel mSeekPanel;
     private EditText mAddressEdt;
     private String mAddress;
     private Button mStartOrPauseButton;
-    private TextView mPositionTxt, mDurationTxt;
+    private TextView mPositionTxt, mDurationTxt, progressTextView;
 
     public CustomVideoFragment() {
         mPresenter = new CustomVideoPresenter(this);
@@ -94,12 +96,14 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
             mSmallContainer = view.findViewById(R.id.small_screen_player_view_container);
             mFullContainer = view.findViewById(R.id.full_screen_player_view_container);
             mPipContainer = view.findViewById(R.id.pip_screen_player_view_container);
+            mPlayerContainer = view.findViewById(R.id.player_container);
 
             //初始化播放器和surface并且进行绑定
             mPlayer = new FPlayer(getContext());
-            mPlayerView = new ResizeView(getContext());
-            View videoView = new TextureView(getContext());
+            mPlayerView = new ResizeView(requireContext());
+            View videoView = new TextureView(requireContext());
             mPlayerView.bind(mPlayer, videoView);
+            mPlayerContainer.addView(mPlayerView, 0);
             //播放器控制按钮
             view.findViewById(R.id.play_path).setOnClickListener(this);
             view.findViewById(R.id.play_json).setOnClickListener(this);
@@ -118,6 +122,7 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
             }
             mPositionTxt = view.findViewById(R.id.position_txt);
             mDurationTxt = view.findViewById(R.id.duration_txt);
+            progressTextView = view.findViewById(R.id.progress);
             mSeekBar = view.findViewById(R.id.seek_bar);
             mSeekBar.setOnSeekBarChangeListener(this);
             mSeekPanel = view.findViewById(R.id.seek_panel);
@@ -188,19 +193,14 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
      */
     public void refreshPlayerView(boolean isFull) {
         FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
-        layoutParams.gravity = Gravity.BOTTOM;
-        float pixel = DensityUtils.dpToPx(getContext(), 40);
-        layoutParams.bottomMargin = (int) pixel;
-
-        ViewGroup viewGroup = (ViewGroup) mPlayerView.getParent();
+        ViewGroup viewGroup = (ViewGroup) mPlayerContainer.getParent();
         if (viewGroup != null) {
-            viewGroup.removeAllViews();
+            viewGroup.removeView(mPlayerContainer);
         }
-
         if (isFull) {
-            mFullContainer.addView(mPlayerView);
+            mFullContainer.addView(mPlayerContainer);
         } else {
-            mSmallContainer.addView(mPlayerView);
+            mSmallContainer.addView(mPlayerContainer);
         }
     }
 
@@ -293,6 +293,9 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
     public void onProgressChanged(SeekPanel seekPanel, int progress) {
         mIsSeekTouch = true;
         mPositionTxt.setText(TimeUtil.format(progress));
+        if (playInfo != null) {
+            progressTextView.setText(TimeUtil.format(progress) + "/" + TimeUtil.format(playInfo.getDuration()));
+        }
     }
 
     @Override
@@ -308,9 +311,27 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
     }
 
     @Override
+    public void onCenterDoubleTap(SeekPanel seekPanel) {
+        State state = mPlayer.getState();
+        switch (state) {
+            case PLAYING:
+                mPresenter.pause();
+                break;
+            case PAUSE:
+                mPresenter.startOrPause();
+                break;
+            default:
+                break;
+        }
+    }
+
+    @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
         if (fromUser) {
             mPositionTxt.setText(TimeUtil.format(progress));
+            if (playInfo != null) {
+                progressTextView.setText(TimeUtil.format(progress) + "/" + TimeUtil.format(playInfo.getDuration()));
+            }
         }
     }
 
@@ -328,7 +349,11 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
         mPresenter.seekTo(value);
     }
 
-    public void onPrepared(int duration) {
+    private PlayInfo playInfo;
+
+    public void onPrepared(PlayInfo playInfo) {
+        this.playInfo = playInfo;
+        int duration = playInfo.getDuration();
         mSeekBar.setMax(duration);
         mSeekPanel.setMaxProgress(duration);
         mDurationTxt.setText(TimeUtil.format(duration));
@@ -342,6 +367,9 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
         mSeekBar.setProgress(position);
         mSeekPanel.setProgress(position);
         mPositionTxt.setText(TimeUtil.format(position));
+        if (playInfo != null) {
+            progressTextView.setText(TimeUtil.format(position) + "/" + TimeUtil.format(playInfo.getDuration()));
+        }
     }
 
     private boolean isInPictureInPictureMode;

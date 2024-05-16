@@ -19,7 +19,6 @@ public class SeekPanel extends FrameLayout {
     private OnSeekPanelListener mOnSeekPanelListener;
     private final GestureDetector mGestureDetector;
     private final SimpleExtOnGestureListener simpleExtOnGestureListener;
-    private SeekBar mSeekBar;
 
     public SeekPanel(@NonNull Context context) {
         super(context);
@@ -37,10 +36,6 @@ public class SeekPanel extends FrameLayout {
         super(context, attrs, defStyleAttr);
         simpleExtOnGestureListener = new SimpleExtOnGestureListener();
         mGestureDetector = new GestureDetector(context, simpleExtOnGestureListener);
-    }
-
-    public void setSeekBar(SeekBar seekBar) {
-        this.mSeekBar = seekBar;
     }
 
     public void setProgress(int value) {
@@ -67,6 +62,7 @@ public class SeekPanel extends FrameLayout {
 
         void onStopTrackingTouch(SeekPanel seekPanel);
 
+        void onCenterDoubleTap(SeekPanel seekPanel);
     }
 
     private @interface TouchRect {
@@ -100,6 +96,7 @@ public class SeekPanel extends FrameLayout {
                     mOnSeekPanelListener.onStopTrackingTouch(SeekPanel.this);
                     break;
                 case TouchRect.CENTER:
+                    mOnSeekPanelListener.onCenterDoubleTap(SeekPanel.this);
                     break;
                 case TouchRect.RIGHT:
                     mProgress = mProgress + 10000;
@@ -133,6 +130,11 @@ public class SeekPanel extends FrameLayout {
             int diffProgress = (int) (mMaxProgress * (dx / width));
             Log.d(TAG, "onScroll diffProgress=" + diffProgress);
             int progress = tempProgress + diffProgress;
+            if (progress < 0) {
+                progress = 0;
+            } else if (progress > mMaxProgress) {
+                progress = mMaxProgress - 5000;
+            }
             Log.d(TAG, "onScroll progress=" + progress);
             mProgress = progress;
             mOnSeekPanelListener.onProgressChanged(SeekPanel.this, progress);
