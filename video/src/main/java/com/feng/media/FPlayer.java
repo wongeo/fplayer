@@ -8,12 +8,13 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.util.Log;
 import android.view.Surface;
 
 import androidx.annotation.RequiresApi;
 
 public class FPlayer implements Player {
-
+    public static final String TAG = "FPlayer";
     private State mState = State.STOP;
     private IPlayStateCallback mPlayStateCallback;
 
@@ -32,31 +33,25 @@ public class FPlayer implements Player {
             }
         };
 
-        mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-            @Override
-            public void onCompletion(MediaPlayer mp) {
-                mPlayStateCallback.onCompletion();
-                onStateChange(State.STOP);
-            }
+        mMediaPlayer.setOnCompletionListener(mp -> {
+            mPlayStateCallback.onCompletion();
+            onStateChange(State.STOP);
         });
 
-        mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-            @Override
-            public void onPrepared(MediaPlayer mp) {
-                mState = State.PREPARED;
-                if (mPlayStateCallback != null) {
-                    mPlayStateCallback.onPrepared(mp.getDuration());
-                }
-                int width = mp.getVideoWidth();
-                int height = mp.getVideoHeight();
-                if (mPlayStateCallback != null) {
-                    mPlayStateCallback.onVideoSizeChange(width, height);
-                }
-                if (mProgress != 0) {
-                    mp.seekTo(mProgress);
-                }
-                start();
+        mMediaPlayer.setOnPreparedListener(mp -> {
+            mState = State.PREPARED;
+            if (mPlayStateCallback != null) {
+                mPlayStateCallback.onPrepared(mp.getDuration());
             }
+            int width = mp.getVideoWidth();
+            int height = mp.getVideoHeight();
+            if (mPlayStateCallback != null) {
+                mPlayStateCallback.onVideoSizeChange(width, height);
+            }
+            if (mProgress != 0) {
+                mp.seekTo(mProgress);
+            }
+            start();
         });
 
         mMediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
@@ -83,7 +78,7 @@ public class FPlayer implements Player {
                     mPlayStateCallback.onPlayPositionChanged(0, position, duration);
                 }
                 Message next = Message.obtain();
-                mHandler.sendMessageDelayed(next, 1000);
+                mHandler.sendMessageDelayed(next, 500);
                 break;
             default:
                 break;
@@ -111,6 +106,7 @@ public class FPlayer implements Player {
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void seekTo(int progress) {
+        Log.d(TAG, "seek " + progress);
         if (progress < 0) {
             progress = 0;
         }

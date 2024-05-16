@@ -48,6 +48,7 @@ import com.feng.video.db.NetDataSource;
 import com.feng.video.util.DiscoverNetIpUtil;
 import com.feng.video.util.SharedPreferencesUtil;
 import com.feng.video.util.TimeUtil;
+import com.feng.video.view.SeekPanel;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -57,7 +58,7 @@ import java.util.List;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 
-public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> implements View.OnTouchListener, View.OnClickListener, View.OnLongClickListener, SeekBar.OnSeekBarChangeListener {
+public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> implements View.OnClickListener, SeekBar.OnSeekBarChangeListener, SeekPanel.OnSeekPanelListener {
 
     private final static String TAG = "CustomVideoFragment";
     private final CustomVideoPresenter mPresenter;
@@ -68,6 +69,7 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
     //播放器父容器,小窗口容器，全屏容器，pip小窗容器
     private FrameLayout mSmallContainer, mFullContainer, mPipContainer;
     private SeekBar mSeekBar;
+    private SeekPanel mSeekPanel;
     private EditText mAddressEdt;
     private String mAddress;
     private Button mStartOrPauseButton;
@@ -98,10 +100,6 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
             mPlayerView = new ResizeView(getContext());
             View videoView = new TextureView(getContext());
             mPlayerView.bind(mPlayer, videoView);
-
-            mPlayerView.setOnLongClickListener(this);
-            mPlayerView.setOnTouchListener(this);
-
             //播放器控制按钮
             view.findViewById(R.id.play_path).setOnClickListener(this);
             view.findViewById(R.id.play_json).setOnClickListener(this);
@@ -122,92 +120,13 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
             mDurationTxt = view.findViewById(R.id.duration_txt);
             mSeekBar = view.findViewById(R.id.seek_bar);
             mSeekBar.setOnSeekBarChangeListener(this);
-
+            mSeekPanel = view.findViewById(R.id.seek_panel);
+            mSeekPanel.setOnSeekPanelListener(this);
             refreshPlayerView(false);
             showControlBar();
         }
         return mRootView;
     }
-
-    @Override
-    public boolean onTouch(View v, MotionEvent event) {
-        if (event.getAction() == MotionEvent.ACTION_UP) {
-            mPlayer.setSpeed(1);
-        }
-        return mGestureDetector.onTouchEvent(event);
-    }
-
-
-    /**
-     * 返回手势的点击区域
-     *
-     * @param e 手势
-     * @return 1, 2, 3
-     */
-    private int touchRect(MotionEvent e) {
-        int width = mPlayerView.getWidth();
-        float tw = width / 3f;
-        if (e.getX() < tw) {
-            return 1;
-        } else if (e.getX() > tw && e.getX() < width - tw) {
-            return 2;
-        } else if (e.getX() > width - tw) {
-            return 3;
-        }
-        return 0;
-    }
-
-    /**
-     * 手势
-     */
-    private final GestureDetector mGestureDetector = new GestureDetector(getActivity(), new GestureDetector.SimpleOnGestureListener() {
-
-        @Override
-        public boolean onSingleTapConfirmed(MotionEvent e) {//单击事件
-            if (touchRect(e) == 2) {//单击显示播控栏区域
-                //点击右侧
-
-            } else {
-                //进行快速seek
-                long position = mSeekBar.getProgress();
-                if (touchRect(e) == 1) {
-                    //快退N秒
-                    position -= 10000;
-                } else if (touchRect(e) == 3) {
-                    //快进N秒
-                    position += 10000;
-                }
-                mPlayer.seekTo((int) position);
-                mSeekBar.setProgress((int) position);
-            }
-            return super.onSingleTapConfirmed(e);
-        }
-
-        @Override
-        public boolean onDoubleTap(MotionEvent e) {//双击事件
-            if (touchRect(e) == 2) {
-                State state = mPlayer.getState();
-                if (state == State.PLAYING) {
-                    mPlayer.pause();
-                } else if (state == State.PAUSE) {
-                    mPlayer.start();
-                }
-            } else {
-                //进行快速seek
-                long position = mSeekBar.getProgress();
-                if (touchRect(e) == 1) {
-                    //快退N秒
-                    position -= 10000;
-                } else if (touchRect(e) == 3) {
-                    //快进N秒
-                    position += 10000;
-                }
-                mPlayer.seekTo((int) position);
-                mSeekBar.setProgress((int) position);
-            }
-            return true;
-        }
-    });
 
     /**
      * 显示播控栏
@@ -239,11 +158,10 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
         } else if (id == R.id.apply_address_btn) {
             Button btn = (Button) v;
             if ("确认".equals(btn.getText())) {
-                ss();
-//                btn.setText("取消");
-//                mAddress = mAddressEdt.getText().toString();
-//                mAddressEdt.setEnabled(false);
-//                SharedPreferencesUtil.getInstance(getContext()).put("ip", mAddress);
+                btn.setText("取消");
+                mAddress = mAddressEdt.getText().toString();
+                mAddressEdt.setEnabled(false);
+                SharedPreferencesUtil.getInstance(getContext()).put("ip", mAddress);
             } else {
                 btn.setText("确认");
                 mAddressEdt.setEnabled(true);
@@ -308,6 +226,7 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
             goSmallScreen();
             return true;
         }
+        mPlayer.stop();
         return super.onBackPress();
     }
 
@@ -371,6 +290,24 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
     }
 
     @Override
+    public void onProgressChanged(SeekPanel seekPanel, int progress) {
+        mIsSeekTouch = true;
+        mPositionTxt.setText(TimeUtil.format(progress));
+    }
+
+    @Override
+    public void onStartTrackingTouch(SeekPanel seekPanel) {
+        mIsSeekTouch = true;
+    }
+
+    @Override
+    public void onStopTrackingTouch(SeekPanel seekPanel) {
+        mIsSeekTouch = false;
+        int value = seekPanel.getProgress();
+        mPresenter.seekTo(value);
+    }
+
+    @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
         if (fromUser) {
             mPositionTxt.setText(TimeUtil.format(progress));
@@ -393,6 +330,7 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
 
     public void onPrepared(int duration) {
         mSeekBar.setMax(duration);
+        mSeekPanel.setMaxProgress(duration);
         mDurationTxt.setText(TimeUtil.format(duration));
     }
 
@@ -402,13 +340,8 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
 
     private void setPositionForView(int position) {
         mSeekBar.setProgress(position);
+        mSeekPanel.setProgress(position);
         mPositionTxt.setText(TimeUtil.format(position));
-    }
-
-    @Override
-    public boolean onLongClick(View view) {
-        mPlayer.setSpeed(3);
-        return false;
     }
 
     private boolean isInPictureInPictureMode;
@@ -448,8 +381,6 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
                 } catch (Throwable ex) {
                     ex.printStackTrace();
                 }
-
-                //需要设计给icon
 //                updateActions();
                 if (pipRet) {
                     return 0;
@@ -480,8 +411,5 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
         }
         Log.d(TAG, "isSupportPip: " + ret);
         return ret;
-    }
-
-    private void ss() {
     }
 }

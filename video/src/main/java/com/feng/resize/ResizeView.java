@@ -120,7 +120,6 @@ public class ResizeView extends FrameLayout implements IResize {
     private final SurfaceTextureListener mSurfaceTextureListener = new SurfaceTextureListener() {
         @Override
         public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
-            Log.i("lwj", "surface texturae available " + mPlayer);
             mSurface = new Surface(surface);
             if (mPlayer != null) {
                 mPlayer.setDisplay(mSurface);
@@ -228,7 +227,6 @@ public class ResizeView extends FrameLayout implements IResize {
 
     @Override
     public void setVideoCutMode(int mode) {
-
         mVideoCurMode = mode;
         resizeOnUiThread();
     }
@@ -239,12 +237,7 @@ public class ResizeView extends FrameLayout implements IResize {
     }
 
     private void resizeOnUiThread() {
-        post(new Runnable() {
-            @Override
-            public void run() {
-                resize();
-            }
-        });
+        post(() -> resize());
     }
 
     public void setVideoTextureListener(SurfaceTextureListener textureListener) {
