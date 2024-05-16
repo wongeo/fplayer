@@ -3,13 +3,12 @@ plugins {
 }
 
 android {
-    compileSdkVersion 31
-    buildToolsVersion "29.0.0"
+    compileSdk 33
 
     defaultConfig {
-        applicationId "com.feng.fplayer"
-        minSdkVersion 26
-        targetSdkVersion 28
+        applicationId "com.feng.player"
+        minSdk 28
+        targetSdk 33
         versionCode 1
         versionName "1.0"
 

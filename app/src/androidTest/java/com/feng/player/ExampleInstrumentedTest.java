@@ -1,4 +1,4 @@
-package com.feng.fplayer;
+package com.feng.player;
 
 import android.content.Context;
 
