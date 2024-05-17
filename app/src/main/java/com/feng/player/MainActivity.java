@@ -1,6 +1,7 @@
 package com.feng.player;
 
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -20,14 +21,13 @@ public class MainActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         requestAllPermissions();
         startFragment(new CustomVideoFragment());
-        User user = new User("", 33);
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        for (int i = 0; i < grantResults.length; ++i) {
-            if (grantResults[i] == -1) {
+        for (int grantResult : grantResults) {
+            if (grantResult == PackageManager.PERMISSION_DENIED) {
                 boolean isSecondRequest = ActivityCompat.shouldShowRequestPermissionRationale(this, permissions[0]);
                 if (isSecondRequest) {
                     ActivityCompat.requestPermissions(this, new String[]{"android.permission.RECORD_AUDIO"}, PERMISSION_REQUEST);

@@ -26,22 +26,40 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
-
     kotlinOptions {
         jvmTarget = '1.8'
+    }
+
+    composeOptions {
+        kotlinCompilerVersion '1.6.10' // 或者使用与AGP兼容的最新Kotlin版本
+        kotlinCompilerExtensionVersion '1.2.0-alpha07' // Compose版本，可以是更高版本
+    }
+    buildFeatures {
+        compose true
     }
 }
 
 dependencies {
-
     implementation fileTree(dir: 'libs', include: ['*.aar'])
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.5.21"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$rootProject.ext.kotlin_version"
     implementation 'androidx.appcompat:appcompat:1.3.1'
     implementation 'com.google.android.material:material:1.4.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.0'
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
+
+    // 添加Jetpack Compose库
+    def compose_version = '1.1.0'
+    implementation "androidx.compose.material:material:1.2.0-alpha01"
+    implementation "androidx.compose.foundation:foundation:$compose_version"
+    implementation "androidx.compose.ui:ui:$compose_version"
+    implementation "androidx.activity:activity-compose:$compose_version"
+
+    // Android Studio Preview support
+    implementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
+    debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
+
 
     implementation project(path: ':video')
 

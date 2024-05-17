@@ -10,7 +10,6 @@ import android.provider.MediaStore;
 import com.feng.video.adapter.Item;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -25,12 +24,7 @@ public class LocalDataSource {
 
         //读取存储卡跟目录mp4视频
         File dir = Environment.getExternalStorageDirectory();
-        File[] files1 = dir.listFiles(new FilenameFilter() {
-            @Override
-            public boolean accept(File dir, String name) {
-                return name.endsWith("mp4");
-            }
-        });
+        File[] files1 = dir.listFiles((dir1, name) -> name.endsWith("mp4"));
 
         Collections.addAll(files, files1);
         //读取视频文件
@@ -40,16 +34,16 @@ public class LocalDataSource {
         if (cursor != null && cursor.getCount() != 0) {
             while (cursor.moveToNext()) {
                 String path = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.DATA));
-
                 int spiltIndex = path.indexOf(".");
                 if (spiltIndex != -1) {
-
                     File file = new File(path);
                     files.add(file);
                 }
             }
         }
-        cursor.close();
+        if (cursor != null) {
+            cursor.close();
+        }
 
         List<Item> items = new ArrayList<>();
         for (File file : files) {
