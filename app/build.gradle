@@ -27,6 +27,7 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
     kotlinOptions {
+        freeCompilerArgs += ['-opt-in=kotlin.RequiresOptIn']
         jvmTarget = '1.8'
     }
 
