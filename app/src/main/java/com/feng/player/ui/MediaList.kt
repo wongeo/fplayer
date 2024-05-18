@@ -12,6 +12,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.feng.player.empty.MediaData
 import com.feng.player.viewmodel.MediaListViewModel
 
 
@@ -21,9 +22,9 @@ fun MediaList(listViewModel: MediaListViewModel = viewModel()) {
         listViewModel.fetchData()
     }
     val list = listOf(
-        ItemData("title1", "desc1", "url1", "img1"),
-        ItemData("title2", "desc2", "url2", "img2"),
-        ItemData("title3", "desc3", "url3", "img3"),
+        MediaData("title1", "desc1", "url1", "img1"),
+        MediaData("title2", "desc2", "url2", "img2"),
+        MediaData("title3", "desc3", "url3", "img3"),
     )
     //列表组件
     LazyColumn {
@@ -33,10 +34,8 @@ fun MediaList(listViewModel: MediaListViewModel = viewModel()) {
     }
 }
 
-data class ItemData(val title: String, val desc: String, val url: String, val img: String)
-
 @Composable
-fun MediaCard(data: ItemData) {
+fun MediaCard(data: MediaData) {
     Card(
         modifier = Modifier.fillMaxWidth()
     ) {
