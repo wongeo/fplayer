@@ -122,7 +122,6 @@ public class CustomVideoFragment extends BaseFragment<CustomVideoPresenter> impl
             }
             mPositionTxt = view.findViewById(R.id.position_txt);
             mDurationTxt = view.findViewById(R.id.duration_txt);
-            progressTextView = view.findViewById(R.id.progress);
             mSeekBar = view.findViewById(R.id.seek_bar);
             mSeekBar.setOnSeekBarChangeListener(this);
             mSeekPanel = view.findViewById(R.id.seek_panel);

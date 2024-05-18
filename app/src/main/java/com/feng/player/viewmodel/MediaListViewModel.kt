@@ -34,8 +34,8 @@ class MediaListViewModel : ViewModel() {
     @OptIn(DelicateCoroutinesApi::class)
     fun fetchData(context: Context) {
         GlobalScope.launch(Dispatchers.IO) {
-//            val items = LocalDataSource.getLocalFiles(context)
-        val items = NetDataSource.getItems(context, "192.168.1.2");
+            val items = LocalDataSource.getLocalFiles(context)
+//        val items = NetDataSource.getItems(context, "192.168.1.2");
             withContext(Dispatchers.Main) {
                 items?.let { item ->
                     list = item.map { MediaData(it.name, it.name, it.uri, it.uri) }

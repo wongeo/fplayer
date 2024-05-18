@@ -11,4 +11,8 @@ public class TimeUtil {
         long second = (time - hour * 60 * 60 * 1000 - minute * 60 * 1000) / 1000;
         return (hour == 0 ? "00" : (hour > 10 ? hour : ("0" + hour))) + ":" + (minute == 0 ? "00" : (minute > 10 ? minute : ("0" + minute))) + ":" + (second == 0 ? "00" : (second > 10 ? second : ("0" + second)));
     }
+
+    public static String format(long positionMilliseconds, long durationMilliseconds) {
+        return format(positionMilliseconds) + " / " + format(durationMilliseconds);
+    }
 }

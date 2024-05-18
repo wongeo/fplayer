@@ -37,9 +37,7 @@ fun MediaList(listViewModel: MediaListViewModel = viewModel()) {
     }
 
     LazyVerticalStaggeredGrid(
-        columns = StaggeredGridCells.Fixed(2),
-        verticalItemSpacing = 8.dp,
-        horizontalArrangement = Arrangement.spacedBy(8.dp) // 设置元素之间的水平间距
+        columns = StaggeredGridCells.Fixed(2), verticalItemSpacing = 8.dp, horizontalArrangement = Arrangement.spacedBy(8.dp) // 设置元素之间的水平间距
     ) {
         items(listViewModel.list) { item ->
             MediaCard(item)
@@ -55,6 +53,7 @@ fun MediaCard(data: MediaData) {
         .fillMaxWidth()
         .clickable {
             val intent = Intent(context, PlayerActivity::class.java)
+            intent.putExtra("url", data.url)
             launcher.launch(intent)
         }) {
         Text(
