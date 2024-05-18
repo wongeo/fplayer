@@ -4,15 +4,17 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material.Button
+import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
+import com.feng.player.ui.MediaList
 
-class YourActivity : ComponentActivity() {
+class ComposeActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            MyComposeUI()
+            ScaffoldExample()
         }
     }
 }
@@ -24,9 +26,23 @@ fun MyComposeUI() {
     }
 }
 
+@Composable
+fun ScaffoldExample() {
+    Scaffold(
+        topBar = {
+            Button(onClick = { /*TODO*/ }) {
+                Text(text = "fjeijfie")
+            }
+        },
+    ) {
+        MediaList()
+    }
+}
+
+
 // 用于预览的Composable
 @Preview
 @Composable
-fun PreviewMyComposeUI() {
-    MyComposeUI()
+fun PreviewScaffoldExample() {
+    ScaffoldExample()
 }

@@ -24,7 +24,7 @@
         android:theme="@style/Theme.AppCompat.NoActionBar"
         android:usesCleartextTraffic="true">
         <activity
-            android:name="com.feng.player.MainActivity"
+            android:name=".ComposeActivity"
             android:configChanges="orientation|keyboardHidden|screenSize|screenLayout"
             android:exported="true"
             android:screenOrientation="fullSensor"
