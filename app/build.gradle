@@ -34,11 +34,12 @@ android {
     composeOptions {
         //https://developer.android.google.cn/jetpack/androidx/releases/compose-kotlin?hl=zh-cn#pre-release_kotlin_compatibility
         kotlinCompilerVersion "$rootProject.ext.kotlin_version" // 或者使用与AGP兼容的最新Kotlin版本
-        kotlinCompilerExtensionVersion '1.2.0-alpha07' // Compose版本，可以是更高版本
+        kotlinCompilerExtensionVersion '1.4.3' // Compose版本，可以是更高版本
     }
     buildFeatures {
         compose true
     }
+    namespace 'com.feng.player'
 }
 
 dependencies {
@@ -52,7 +53,7 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
 
     // 添加Jetpack Compose库
-    def compose_version = '1.1.0'
+    def compose_version = '1.4.0'
     implementation "androidx.compose.material:material:1.2.0-alpha01"
     implementation "androidx.compose.foundation:foundation:$compose_version"
     implementation "androidx.compose.ui:ui:$compose_version"

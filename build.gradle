@@ -1,10 +1,10 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
     ext {
-        agp_version = '4.2.2'
-        kotlin_version = '1.6.10'
-        maven = 'http://maven.aliyun.com/nexus/content/groups/public/'
-        maven2 = 'http://maven.aliyun.com/nexus/content/repositories/jcenter'
+        agp_version = '7.4.2'
+        kotlin_version = '1.8.10'
+        maven = 'https://maven.aliyun.com/nexus/content/groups/public/'
+        maven2 = 'https://maven.aliyun.com/nexus/content/repositories/jcenter'
         maven3 = 'https://gitee.com/wongeo/repo/raw/main/'
     }
     repositories {
@@ -29,7 +29,7 @@ allprojects {
     }
 }
 ext {
-    kotlin_version = '1.6.10'
+    kotlin_version = rootProject.ext.kotlin_version
     aaa = rootProject.ext.kotlin_version
 }
 
