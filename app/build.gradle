@@ -32,7 +32,8 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerVersion '1.6.10' // 或者使用与AGP兼容的最新Kotlin版本
+        //https://developer.android.google.cn/jetpack/androidx/releases/compose-kotlin?hl=zh-cn#pre-release_kotlin_compatibility
+        kotlinCompilerVersion "$rootProject.ext.kotlin_version" // 或者使用与AGP兼容的最新Kotlin版本
         kotlinCompilerExtensionVersion '1.2.0-alpha07' // Compose版本，可以是更高版本
     }
     buildFeatures {
