@@ -124,11 +124,6 @@ public class SeekPanel extends FrameLayout {
             Log.d(TAG, "onScroll dx=" + dx);
             int width = getWidth();
             mProgress = (int) (mMaxProgress * (dx / width));
-            if (mProgress < 0) {
-                mProgress = 0;
-            } else if (mProgress > mMaxProgress) {
-                mProgress = mMaxProgress - 5000;
-            }
             Log.d(TAG, "onScroll progress=" + mProgress);
             mOnSeekPanelListener.onProgressChanged(SeekPanel.this, mProgress);
             return false;
