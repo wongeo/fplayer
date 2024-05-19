@@ -1,14 +1,14 @@
 package com.feng.player.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.lightColors
-import androidx.compose.material.darkColors
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 
 
-val lightColors = lightColors()
-val darkColors = darkColors()
+val lightColorScheme = lightColorScheme()
+val darkColorScheme = darkColorScheme()
 
 @Composable
 fun PlayerTheme(
@@ -16,7 +16,7 @@ fun PlayerTheme(
     content: @Composable () -> Unit
 ) {
     MaterialTheme(
-        colors = if (darkTheme) darkColors else lightColors,
+        colorScheme = if (darkTheme) darkColorScheme else lightColorScheme,
         content = content
     )
 }

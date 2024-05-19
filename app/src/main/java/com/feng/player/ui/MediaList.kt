@@ -3,19 +3,15 @@ package com.feng.player.ui
 import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
-import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
-import androidx.compose.material.Card
-import androidx.compose.material.Text
+import androidx.compose.foundation.lazy.staggeredgrid.items
+import androidx.compose.material3.Card
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
@@ -28,7 +24,6 @@ import com.feng.player.PlayerActivity
 import com.feng.player.empty.MediaData
 import com.feng.player.viewmodel.MediaListViewModel
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MediaList(listViewModel: MediaListViewModel = viewModel()) {
     val context = LocalContext.current
@@ -37,7 +32,9 @@ fun MediaList(listViewModel: MediaListViewModel = viewModel()) {
     }
 
     LazyVerticalStaggeredGrid(
-        columns = StaggeredGridCells.Fixed(2), verticalItemSpacing = 8.dp, horizontalArrangement = Arrangement.spacedBy(8.dp) // 设置元素之间的水平间距
+        columns = StaggeredGridCells.Fixed(2),
+        verticalItemSpacing = 8.dp,
+        horizontalArrangement = Arrangement.spacedBy(8.dp) // 设置元素之间的水平间距
     ) {
         items(listViewModel.list) { item ->
             MediaCard(item)

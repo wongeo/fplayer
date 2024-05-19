@@ -38,12 +38,11 @@ public class SeekPanel extends FrameLayout {
         mGestureDetector = new GestureDetector(context, simpleExtOnGestureListener);
     }
 
-    public void setProgress(int value) {
-        this.mProgress = value;
-    }
+    public static final int MIN_PROGRESS = 15 * 60 * 1000;
 
     public void setMaxProgress(int value) {
         this.mMaxProgress = value;
+        mMaxProgress = Math.min(MIN_PROGRESS, mMaxProgress);
     }
 
     public void setOnSeekPanelListener(OnSeekPanelListener listener) {
@@ -56,7 +55,7 @@ public class SeekPanel extends FrameLayout {
 
     public interface OnSeekPanelListener {
 
-        void onProgressChanged(SeekPanel seekPanel, int progress);
+        void onProgressChanged(SeekPanel seekPanel, int diffProgress);
 
         void onStartTrackingTouch(SeekPanel seekPanel);
 
@@ -92,21 +91,19 @@ public class SeekPanel extends FrameLayout {
             int touchRect = touchRect(e);
             switch (touchRect) {
                 case TouchRect.LEFT:
-                    mProgress = mProgress - 10000;
+                    mProgress = -10000;
                     mOnSeekPanelListener.onStopTrackingTouch(SeekPanel.this);
                     break;
                 case TouchRect.CENTER:
                     mOnSeekPanelListener.onCenterDoubleTap(SeekPanel.this);
                     break;
                 case TouchRect.RIGHT:
-                    mProgress = mProgress + 10000;
+                    mProgress = 10000;
                     mOnSeekPanelListener.onStopTrackingTouch(SeekPanel.this);
                     break;
             }
             return true;
         }
-
-        private int tempProgress;
 
         public void onUp(MotionEvent e) {
             if (isScrolling) {
@@ -120,24 +117,20 @@ public class SeekPanel extends FrameLayout {
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
             if (!isScrolling) {
-                tempProgress = mProgress;
                 mOnSeekPanelListener.onStartTrackingTouch(SeekPanel.this);
             }
             isScrolling = true;
             float dx = e2.getX() - e1.getX();
             Log.d(TAG, "onScroll dx=" + dx);
             int width = getWidth();
-            int diffProgress = (int) (mMaxProgress * (dx / width));
-            Log.d(TAG, "onScroll diffProgress=" + diffProgress);
-            int progress = tempProgress + diffProgress;
-            if (progress < 0) {
-                progress = 0;
-            } else if (progress > mMaxProgress) {
-                progress = mMaxProgress - 5000;
+            mProgress = (int) (mMaxProgress * (dx / width));
+            if (mProgress < 0) {
+                mProgress = 0;
+            } else if (mProgress > mMaxProgress) {
+                mProgress = mMaxProgress - 5000;
             }
-            Log.d(TAG, "onScroll progress=" + progress);
-            mProgress = progress;
-            mOnSeekPanelListener.onProgressChanged(SeekPanel.this, progress);
+            Log.d(TAG, "onScroll progress=" + mProgress);
+            mOnSeekPanelListener.onProgressChanged(SeekPanel.this, mProgress);
             return false;
         }
 

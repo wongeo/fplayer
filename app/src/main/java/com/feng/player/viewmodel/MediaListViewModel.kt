@@ -5,6 +5,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import com.feng.player.db.Item
+import com.feng.player.db.getItems
 import com.feng.player.db.getLocalFiles
 import com.feng.player.empty.MediaData
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -33,13 +35,16 @@ class MediaListViewModel : ViewModel() {
     @OptIn(DelicateCoroutinesApi::class)
     fun fetchData(context: Context) {
         GlobalScope.launch(Dispatchers.IO) {
-            val items = getLocalFiles(context)
+//            val items = getLocalFiles(context)
+            val items = getItems(context, "192.168.1.2")
 //            val items = LocalDataSource.getLocalFiles(context)
 //        val items = NetDataSource.getItems(context, "192.168.1.2");
+            //排序
+            list = items
+                ?.sortedWith(compareBy { it.name })//排序
+                ?.map { MediaData(it.name, it.name, it.path, "null") }!!
             withContext(Dispatchers.Main) {
-                items?.let { item ->
-                    list = item.map { MediaData(it.name, it.name, it.path, "null") }
-                }
+                list
             }
         }
     }

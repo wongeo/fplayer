@@ -31,6 +31,7 @@ class PlayerFragment : Fragment(), View.OnClickListener, OnSeekBarChangeListener
     private var mSeekPanel: SeekPanel? = null
     private var mTimeTextView: TextView? = null
     private var mStartOrPause: ImageView? = null
+    private var mFullScreen: View? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,10 +52,12 @@ class PlayerFragment : Fragment(), View.OnClickListener, OnSeekBarChangeListener
         mPlayerContainer!!.addView(viewModel.getPlayerView(), 0)
 
         //无状态按钮
-        listOf(R.id.full, R.id.pip).forEach {
+        listOf(R.id.pip).forEach {
             view.findViewById<View>(it).setOnClickListener(this)
         }
-
+        mFullScreen = view.findViewById<View?>(R.id.full).apply {
+            setOnClickListener(this@PlayerFragment)
+        }
         mStartOrPause = view.findViewById<ImageView>(R.id.start_or_pause_iv).apply {
             setOnClickListener(this@PlayerFragment)
         }
@@ -76,7 +79,6 @@ class PlayerFragment : Fragment(), View.OnClickListener, OnSeekBarChangeListener
         viewModel.progress.observe(viewLifecycleOwner) {
             if (!isSeekTouch) {
                 mSeekBar!!.progress = it
-                mSeekPanel!!.progress = it
                 mTimeTextView!!.text = formatTime(it, viewModel.duration.value!!)
             }
         }
@@ -134,7 +136,7 @@ class PlayerFragment : Fragment(), View.OnClickListener, OnSeekBarChangeListener
                 refreshPlayerView(true)
             }
 
-            Configuration.ORIENTATION_PORTRAIT -> {
+            else -> {
                 refreshPlayerView(false)
             }
         }
@@ -156,8 +158,10 @@ class PlayerFragment : Fragment(), View.OnClickListener, OnSeekBarChangeListener
         val viewGroup = mPlayerContainer!!.parent as ViewGroup
         viewGroup.removeView(mPlayerContainer)
         if (isFull) {
+            mFullScreen!!.visibility = View.GONE
             mFullContainer!!.addView(mPlayerContainer)
         } else {
+            mFullScreen!!.visibility = View.VISIBLE
             mSmallContainer!!.addView(mPlayerContainer)
         }
     }
@@ -178,10 +182,8 @@ class PlayerFragment : Fragment(), View.OnClickListener, OnSeekBarChangeListener
     }
 
     private fun seekEnd(progress: Int) {
-        if (isSeekTouch) {
-            isSeekTouch = false
-            viewModel.seekTo(progress)
-        }
+        isSeekTouch = false
+        viewModel.seekTo(progress)
     }
 
     override fun onStartTrackingTouch(seekBar: SeekBar?) {
@@ -198,8 +200,10 @@ class PlayerFragment : Fragment(), View.OnClickListener, OnSeekBarChangeListener
         seekEnd(progress = seekBar!!.progress)
     }
 
-    override fun onProgressChanged(seekPanel: SeekPanel?, progress: Int) {
-        seeking(progress)
+    override fun onProgressChanged(seekPanel: SeekPanel?, diffProgress: Int) {
+        mSeekBar?.let {
+            seeking(it.progress + diffProgress)
+        }
     }
 
     override fun onStartTrackingTouch(seekPanel: SeekPanel?) {
@@ -207,7 +211,9 @@ class PlayerFragment : Fragment(), View.OnClickListener, OnSeekBarChangeListener
     }
 
     override fun onStopTrackingTouch(seekPanel: SeekPanel?) {
-        seekEnd(progress = seekPanel!!.progress)
+        mSeekBar?.let {
+            seekEnd(it.progress + (seekPanel?.progress ?: 0))
+        }
     }
 
     override fun onCenterDoubleTap(seekPanel: SeekPanel?) {
