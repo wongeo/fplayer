@@ -7,11 +7,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.SeekBar
 import android.widget.SeekBar.OnSeekBarChangeListener
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import com.feng.media.State
 import com.feng.player.R
 import com.feng.player.util.formatTime
 import com.feng.player.viewmodel.PlayerViewModel
@@ -27,8 +29,8 @@ class PlayerFragment : Fragment(), View.OnClickListener, OnSeekBarChangeListener
     private var mPlayerContainer: ViewGroup? = null
     private var mSeekBar: SeekBar? = null
     private var mSeekPanel: SeekPanel? = null
-    private var mStartOrPauseButton: Button? = null
     private var mTimeTextView: TextView? = null
+    private var mStartOrPause: ImageView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,12 +50,15 @@ class PlayerFragment : Fragment(), View.OnClickListener, OnSeekBarChangeListener
         //初始化播放器和surface并且进行绑定
         mPlayerContainer!!.addView(viewModel.getPlayerView(), 0)
 
-        //播放器控制按钮
-        mStartOrPauseButton = view.findViewById(R.id.start_or_pause_btn)
-        mStartOrPauseButton!!.setOnClickListener(this)
-        view.findViewById<View>(R.id.jingyin).setOnClickListener(this)
-        view.findViewById<View>(R.id.full).setOnClickListener(this)
-        view.findViewById<View>(R.id.pip).setOnClickListener(this)
+        //无状态按钮
+        listOf(R.id.full, R.id.pip).forEach {
+            view.findViewById<View>(it).setOnClickListener(this)
+        }
+
+        mStartOrPause = view.findViewById<ImageView>(R.id.start_or_pause_iv).apply {
+            setOnClickListener(this@PlayerFragment)
+        }
+
         mTimeTextView = view.findViewById(R.id.time_tv)
         mSeekBar = view.findViewById(R.id.seek_bar)
         mSeekBar!!.setOnSeekBarChangeListener(this)
@@ -75,10 +80,23 @@ class PlayerFragment : Fragment(), View.OnClickListener, OnSeekBarChangeListener
                 mTimeTextView!!.text = formatTime(it, viewModel.duration.value!!)
             }
         }
-
         viewModel.duration.observe(viewLifecycleOwner) {
             mSeekBar!!.max = it
             mSeekPanel!!.setMaxProgress(it)
+        }
+
+        viewModel.state.observe(viewLifecycleOwner) {
+            when (it) {
+                State.STOP, State.PAUSE -> {
+                    mStartOrPause?.setImageResource(R.drawable.ic_player_playing)
+                }
+
+                State.PLAYING -> {
+                    mStartOrPause?.setImageResource(R.drawable.ic_player_pause)
+                }
+
+                else -> {}
+            }
         }
 
         activity?.intent?.getStringExtra("url").let {
@@ -101,6 +119,10 @@ class PlayerFragment : Fragment(), View.OnClickListener, OnSeekBarChangeListener
 
             R.id.pip -> {
 
+            }
+
+            R.id.start_or_pause_iv -> {
+                viewModel.startOrPause()
             }
         }
     }

@@ -18,6 +18,8 @@ class PlayerViewModel : ViewModel(), IPlayStateCallback {
     private val playerView = MutableLiveData<ResizeView>()
     var progress: MutableLiveData<Int> = MutableLiveData(0)
     var duration: MutableLiveData<Int> = MutableLiveData(0)
+    var state: MutableLiveData<State> = MutableLiveData(State.STOP)
+
 
     fun initPlayer(context: Context) {
         val videoView: View = TextureView(context)
@@ -72,7 +74,7 @@ class PlayerViewModel : ViewModel(), IPlayStateCallback {
     }
 
     override fun onPlayerStateChanged(oldState: State?, newState: State?) {
-
+        state.value = newState
     }
 
     override fun onVideoSizeChange(width: Int, height: Int) {
