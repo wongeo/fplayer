@@ -3,35 +3,28 @@ package com.feng.player.fragment
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.FrameLayout
 import android.widget.SeekBar
 import android.widget.SeekBar.OnSeekBarChangeListener
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.feng.player.R
+import com.feng.player.util.formatTime
 import com.feng.player.viewmodel.PlayerViewModel
-import com.feng.video.util.TimeUtil
 import com.feng.video.view.SeekPanel
 import com.feng.video.view.SeekPanel.OnSeekPanelListener
 
 class PlayerFragment : Fragment(), View.OnClickListener, OnSeekBarChangeListener, OnSeekPanelListener {
 
     private lateinit var viewModel: PlayerViewModel
-
-    private val mHandler = Handler(Looper.getMainLooper())
-
-    //播放器父容器,小窗口容器，全屏容器，pip小窗容器
-    private var mSmallContainer: FrameLayout? = null  //播放器父容器,小窗口容器，全屏容器，pip小窗容器
-    private var mFullContainer: FrameLayout? = null  //播放器父容器,小窗口容器，全屏容器，pip小窗容器
-    private var mPipContainer: FrameLayout? = null  //播放器父容器,小窗口容器，全屏容器，pip小窗容器
-    private var mPlayerContainer: FrameLayout? = null
+    private var mSmallContainer: ViewGroup? = null
+    private var mFullContainer: ViewGroup? = null
+    private var mPipContainer: ViewGroup? = null
+    private var mPlayerContainer: ViewGroup? = null
     private var mSeekBar: SeekBar? = null
     private var mSeekPanel: SeekPanel? = null
     private var mStartOrPauseButton: Button? = null
@@ -71,7 +64,7 @@ class PlayerFragment : Fragment(), View.OnClickListener, OnSeekBarChangeListener
     }
 
     private fun formatTime(position: Int, duration: Int): String {
-        return "${TimeUtil.format(position.toLong())} / ${TimeUtil.format(duration.toLong())}"
+        return "${formatTime(position.toLong())} / ${formatTime(duration.toLong())}"
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -196,6 +189,6 @@ class PlayerFragment : Fragment(), View.OnClickListener, OnSeekBarChangeListener
     }
 
     override fun onCenterDoubleTap(seekPanel: SeekPanel?) {
-        viewModel.startOrPause()
+        startOrPause()
     }
 }

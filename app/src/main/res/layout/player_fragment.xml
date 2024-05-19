@@ -15,10 +15,11 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <FrameLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/small_screen_player_view_container"
                 android:layout_width="match_parent"
-                android:layout_height="220dp"
+                android:layout_height="0dp"
+                app:layout_constraintDimensionRatio="9:13"
                 app:layout_constraintRight_toRightOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
@@ -42,7 +43,7 @@
                         android:layout_height="match_parent"
                         android:clickable="true" />
                 </FrameLayout>
-            </FrameLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
 
             <SeekBar
@@ -64,6 +65,23 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/seek_bar">
 
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/play_button"
+                    style="?attr/materialButtonOutlinedStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="播放"
+                    app:iconGravity="textStart"
+                    app:shapeAppearance="@style/ShapeAppearance.MaterialComponents.SmallComponent" />
+
+                <com.google.android.material.radiobutton.MaterialRadioButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="16dp"
+                    android:checked="true"
+                    android:layoutDirection="rtl"
+                    android:text="English" />
 
                 <Button
                     android:id="@+id/start_or_pause_btn"
