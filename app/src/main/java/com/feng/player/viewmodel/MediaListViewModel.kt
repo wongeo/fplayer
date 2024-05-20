@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.feng.player.db.getDataFromNet
+import com.feng.player.db.getLocalFiles
 import com.feng.player.empty.MediaData
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
@@ -14,7 +15,9 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class MediaListViewModel : ViewModel() {
+open class MediaListViewModel : ViewModel() {
+    var state by mutableStateOf(MediaListState.Loading)
+
     var list by mutableStateOf<List<MediaData>>(
         listOf(
             MediaData("title1", "desc1", "url1", "img1"),
@@ -32,10 +35,11 @@ class MediaListViewModel : ViewModel() {
     )
 
     @OptIn(DelicateCoroutinesApi::class)
-    fun fetchData(context: Context) {
+    open fun fetchData(context: Context, remote: Boolean = true) {
         GlobalScope.launch(Dispatchers.IO) {
+            state = MediaListState.Loading
 //            val items = getLocalFiles(context)
-            val items = getDataFromNet(context)
+            val items = if (remote)  getDataFromNet(context) else getLocalFiles(context)
 //            val items = LocalDataSource.getLocalFiles(context)
 //        val items = NetDataSource.getItems(context, "192.168.1.2");
             //排序
@@ -43,13 +47,21 @@ class MediaListViewModel : ViewModel() {
                 ?.sortedWith(compareBy { it.name })//排序
                 ?.map { MediaData(it.name, it.name, it.path, "null") }?.let {
                     withContext(Dispatchers.Main) {
+                        state = MediaListState.Success
                         list = it
                     }
                 } ?: run {
                 withContext(Dispatchers.Main) {
+                    state = MediaListState.Error
                     Toast.makeText(context, "数据为空", Toast.LENGTH_LONG).show()
                 }
             }
         }
     }
+}
+
+enum class MediaListState {
+    Loading,
+    Success,
+    Error
 }

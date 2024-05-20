@@ -9,6 +9,7 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -27,7 +28,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MainContent() {
-    val pagerState = rememberPagerState(pageCount = { 2 })
+    val pagerState = rememberPagerState(pageCount = { 3 })
     Scaffold(
         content = { innerPadding ->
             Content(pagerState, contentPadding = innerPadding)
@@ -52,7 +53,8 @@ fun Content(pagerState: PagerState, contentPadding: PaddingValues) {
         contentPadding = contentPadding
     ) { page ->
         when (page) {
-            0 -> MediaList()
+            0 -> RemoteMediaList()
+            1 -> LocalMediaList()
             else -> UserCenter()
         }
     }
@@ -70,12 +72,20 @@ fun BottomBar(selected: Int = 0, onSelectedChanged: (Int) -> Unit) {
                 onSelectedChanged(0)
             })
         NavigationBarItem(
-            icon = { Icon(Icons.Filled.Person, "个人中心") },
-            label = { Text(text = "个人中心") },
+            icon = { Icon(Icons.Filled.Menu, "个人中心") },
+            label = { Text(text = "本地媒体") },
             alwaysShowLabel = false,
             selected = selected == 1,
             onClick = {
                 onSelectedChanged(1)
+            })
+        NavigationBarItem(
+            icon = { Icon(Icons.Filled.Person, "个人中心") },
+            label = { Text(text = "个人中心") },
+            alwaysShowLabel = false,
+            selected = selected == 2,
+            onClick = {
+                onSelectedChanged(2)
             })
     }
 }

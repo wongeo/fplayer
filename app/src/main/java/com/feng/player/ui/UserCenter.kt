@@ -27,6 +27,7 @@ import com.feng.player.viewmodel.UserCenterViewModel
 
 @Composable
 fun UserCenter() {
+
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
@@ -35,27 +36,23 @@ fun UserCenter() {
             val context: Context = LocalContext.current
             val viewModel: UserCenterViewModel = viewModel()
             var text by remember { mutableStateOf(viewModel.load(context)) }
-            var enable by remember {
-                mutableStateOf(true)
-            }
             OutlinedTextField(
                 value = text,
                 onValueChange = { text = it },
-                enabled = enable,
+                enabled = viewModel.enableInput,
                 label = { Text("请输入IP") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
             )
             Spacer(modifier = Modifier.padding(vertical = 8.dp))
             Button(onClick = {
                 viewModel.submit(context, text)
-                enable = false
+                viewModel.enableInput = false
             }) {
                 Text(text = "确定")
             }
         }
     }
 }
-
 
 @Preview
 @Composable

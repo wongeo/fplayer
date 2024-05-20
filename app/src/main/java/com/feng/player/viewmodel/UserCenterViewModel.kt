@@ -1,9 +1,14 @@
 package com.feng.player.viewmodel
 
 import android.content.Context
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 
 class UserCenterViewModel : ViewModel() {
+
+    var enableInput by mutableStateOf(true)
 
     fun load(context: Context): String {
         return getIP(context)
