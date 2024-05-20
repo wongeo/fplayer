@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.SurfaceTexture;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.Surface;
 import android.view.SurfaceHolder;
@@ -17,7 +16,7 @@ import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.feng.media.Player;
+import com.feng.media.IPlayer;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -27,7 +26,7 @@ public class ResizeView extends FrameLayout implements IResize {
 
     private Surface mSurface;
     private View mVideoView;
-    private Player mPlayer;
+    private IPlayer mPlayer;
 
     private float mTargetAspectRatio;//视频宽高比
     private float mParentAspectRatio;//容器宽高比
@@ -48,8 +47,8 @@ public class ResizeView extends FrameLayout implements IResize {
         super(context, attrs);
     }
 
-    public void bind(@NonNull Player player, @NonNull View view) {
-        mPlayer = player;
+    public void bind(@NonNull IPlayer IPlayer, @NonNull View view) {
+        mPlayer = IPlayer;
         mVideoView = view;
         mVideoView.setKeepScreenOn(true);
         if (view instanceof SurfaceView) {

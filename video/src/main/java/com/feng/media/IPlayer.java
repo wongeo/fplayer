@@ -1,8 +1,9 @@
 package com.feng.media;
 
+import android.content.Context;
 import android.view.Surface;
 
-public interface Player {
+public interface IPlayer {
 
     void play(String uri, int point);
 
@@ -23,4 +24,8 @@ public interface Player {
     void setSpeed(float speed);
 
     long getCurrentPosition();
+
+    static IPlayer create(Context context, Class<? extends IPlayer> classz) {
+        return new EPlayer(context);
+    }
 }

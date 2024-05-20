@@ -3,7 +3,7 @@ package com.feng.media;
 public interface IPlayStateCallback {
 
 
-    void onMediaError(Exception ex);
+    void onMediaError(ErrorInfo ex);
 
     void onBufferingProgressChanged(int percent);
 

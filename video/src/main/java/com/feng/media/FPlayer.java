@@ -13,7 +13,7 @@ import android.view.Surface;
 
 import androidx.annotation.RequiresApi;
 
-public class FPlayer implements Player {
+public class FPlayer implements IPlayer {
     public static final String TAG = "FPlayer";
     private State mState = State.STOP;
     private IPlayStateCallback mPlayStateCallback;
@@ -58,8 +58,7 @@ public class FPlayer implements Player {
         mMediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
             @Override
             public boolean onError(MediaPlayer mp, int what, int extra) {
-                Exception exception = new Exception("what:" + what + " extra:" + extra);
-                mPlayStateCallback.onMediaError(exception);
+                mPlayStateCallback.onMediaError(new ErrorInfo(what, "what:" + what + " extra:" + extra));
                 return false;
             }
         });
@@ -96,8 +95,7 @@ public class FPlayer implements Player {
             mMediaPlayer.prepareAsync();
             onStateChange(State.PREPARING);
         } catch (Exception e) {
-            e.printStackTrace();
-            mPlayStateCallback.onMediaError(e);
+            mPlayStateCallback.onMediaError(new ErrorInfo(0, Log.getStackTraceString(e)));
         }
     }
 

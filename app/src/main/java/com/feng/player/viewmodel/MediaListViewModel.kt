@@ -1,13 +1,12 @@
 package com.feng.player.viewmodel
 
 import android.content.Context
+import android.widget.Toast
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import com.feng.player.db.Item
-import com.feng.player.db.getItems
-import com.feng.player.db.getLocalFiles
+import com.feng.player.db.getDataFromNet
 import com.feng.player.empty.MediaData
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
@@ -36,15 +35,20 @@ class MediaListViewModel : ViewModel() {
     fun fetchData(context: Context) {
         GlobalScope.launch(Dispatchers.IO) {
 //            val items = getLocalFiles(context)
-            val items = getItems(context, "192.168.1.2")
+            val items = getDataFromNet(context)
 //            val items = LocalDataSource.getLocalFiles(context)
 //        val items = NetDataSource.getItems(context, "192.168.1.2");
             //排序
-            list = items
+            items
                 ?.sortedWith(compareBy { it.name })//排序
-                ?.map { MediaData(it.name, it.name, it.path, "null") }!!
-            withContext(Dispatchers.Main) {
-                list
+                ?.map { MediaData(it.name, it.name, it.path, "null") }?.let {
+                    withContext(Dispatchers.Main) {
+                        list = it
+                    }
+                } ?: run {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(context, "数据为空", Toast.LENGTH_LONG).show()
+                }
             }
         }
     }

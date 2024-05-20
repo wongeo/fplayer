@@ -1,60 +1,52 @@
 package com.feng.player.viewmodel
 
 import android.content.Context
-import android.view.TextureView
-import android.view.View
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.feng.media.FPlayer
+import com.feng.media.ErrorInfo
 import com.feng.media.IPlayStateCallback
 import com.feng.media.PlayInfo
-import com.feng.media.Player
+import com.feng.media.IPlayer
 import com.feng.media.State
-import com.feng.resize.ResizeView
-import java.lang.Exception
 
 class PlayerViewModel : ViewModel(), IPlayStateCallback {
-    private val player = MutableLiveData<Player>()
-    private val playerView = MutableLiveData<ResizeView>()
+    private lateinit var player: IPlayer
+
+    //mvvm动态变量
     var progress: MutableLiveData<Int> = MutableLiveData(0)
     var duration: MutableLiveData<Int> = MutableLiveData(0)
     var state: MutableLiveData<State> = MutableLiveData(State.STOP)
+    var videoSize: MutableLiveData<Pair<Int, Int>> = MutableLiveData()
 
-
-    fun initPlayer(context: Context) {
-        val videoView: View = TextureView(context)
-        player.value = FPlayer(context)
-        playerView.value = ResizeView(context.applicationContext)
-        playerView.value!!.bind(player.value as FPlayer, videoView)
-        player.value!!.setPlayStateCallback(this)
-    }
-
-    fun getPlayerView(): ResizeView {
-        return playerView.value ?: throw Exception("playerView is null")
+    fun createPlayer(context: Context): IPlayer {
+        player = IPlayer.create(context, null).apply {
+            setPlayStateCallback(this@PlayerViewModel)
+        }
+        return player
     }
 
     fun play(url: String) {
-        player.value?.play(url, 0)
+        player.play(url, 0)
     }
 
     fun pause() {
-        player.value?.pause()
+        player.pause()
     }
 
     fun mute() {
     }
 
     fun resume() {
-        player.value?.start()
+        player.start()
     }
 
     fun seekTo(position: Int) {
         progress.value = position
-        player.value?.seekTo(position)
+        player.seekTo(position)
     }
 
     fun stop() {
-        player.value?.stop()
+        player.stop()
     }
 
     override fun onCompletion() {
@@ -65,7 +57,7 @@ class PlayerViewModel : ViewModel(), IPlayStateCallback {
 
     }
 
-    override fun onMediaError(ex: Exception?) {
+    override fun onMediaError(ex: ErrorInfo?) {
 
     }
 
@@ -78,7 +70,7 @@ class PlayerViewModel : ViewModel(), IPlayStateCallback {
     }
 
     override fun onVideoSizeChange(width: Int, height: Int) {
-        playerView.value?.refreshVideoSize(width, height)
+        videoSize.value = Pair(width, height)
     }
 
     override fun onPlayPositionChanged(percent: Float, position: Long, duration: Long) {
@@ -86,11 +78,11 @@ class PlayerViewModel : ViewModel(), IPlayStateCallback {
     }
 
     fun startOrPause() {
-        val state = player.value!!.state
+        val state = player.state
         if (state == State.PAUSE) {
-            player.value!!.start()
+            player.start()
         } else if (state == State.PLAYING) {
-            player.value!!.pause()
+            player.pause()
         }
     }
 }

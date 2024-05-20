@@ -51,6 +51,29 @@ public class NewTextureView extends TextureView {
     public void setParentSize(int width, int height) {
         mParentWidth = width;
         mParentHeight = height;
+
+        SeekPanel seekPanel = null;
+        seekPanel.setOnSeekPanelListener(new SeekPanel.OnSeekPanelListener() {
+            @Override
+            public void onProgressChanged(SeekPanel seekPanel, int diffProgress) {
+
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekPanel seekPanel) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekPanel seekPanel) {
+
+            }
+
+            @Override
+            public void onCenterDoubleTap(SeekPanel seekPanel) {
+
+            }
+        });
     }
 
     public void setOrientation(int orientation) {
