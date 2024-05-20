@@ -18,30 +18,14 @@ import kotlinx.coroutines.withContext
 open class MediaListViewModel : ViewModel() {
     var state by mutableStateOf(MediaListState.Loading)
 
-    var list by mutableStateOf<List<MediaData>>(
-        listOf(
-            MediaData("title1", "desc1", "url1", "img1"),
-            MediaData("title2", "desc2", "url2", "img2"),
-            MediaData("title3", "desc3", "url3", "img3"),
-            MediaData("title4", "desc4", "url4", "img4"),
-            MediaData("title5", "desc5", "url5", "img5"),
-            MediaData("title6", "desc6", "url6", "img6"),
-            MediaData("title7", "desc7", "url7", "img7"),
-            MediaData("title8", "desc8", "url8", "img8"),
-            MediaData("title9", "desc9", "url9", "img9"),
-            MediaData("title10", "desc10", "url10", "img10"),
-            MediaData("title11", "desc11", "url11", "img11"),
-        )
-    )
+    var list by mutableStateOf<List<MediaData>>(listOf())
+        private set
 
     @OptIn(DelicateCoroutinesApi::class)
     open fun fetchData(context: Context, remote: Boolean = true) {
         GlobalScope.launch(Dispatchers.IO) {
             state = MediaListState.Loading
-//            val items = getLocalFiles(context)
-            val items = if (remote)  getDataFromNet(context) else getLocalFiles(context)
-//            val items = LocalDataSource.getLocalFiles(context)
-//        val items = NetDataSource.getItems(context, "192.168.1.2");
+            val items = if (remote) getDataFromNet(context) else getLocalFiles(context)
             //排序
             items
                 ?.sortedWith(compareBy { it.name })//排序

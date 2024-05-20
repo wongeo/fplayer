@@ -211,6 +211,8 @@ class PlayerFragment : Fragment(), View.OnClickListener, OnSeekBarChangeListener
     }
 
     override fun onProgressChanged(seekPanel: SeekPanel?, diffProgress: Int) {
+        val progress = mSeekBar.progress + diffProgress
+        mSeekBar.progress = progress
         seeking(mSeekBar.progress + diffProgress)
     }
 

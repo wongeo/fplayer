@@ -14,8 +14,10 @@ fun LocalMediaList() {
     val viewModel: LocalMediaListViewModel = viewModel()
     val list = viewModel.list
     val state = viewModel.state
-    LaunchedEffect(Unit) {
-        viewModel.fetchData(context, false)
+    if (state != MediaListState.Success) {
+        LaunchedEffect(Unit) {
+            viewModel.fetchData(context)
+        }
     }
     when (state) {
         MediaListState.Loading -> Text(text = "加载中")
