@@ -5,8 +5,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.feng.media.ErrorInfo
 import com.feng.media.IPlayStateCallback
-import com.feng.media.PlayInfo
 import com.feng.media.IPlayer
+import com.feng.media.PlayInfo
 import com.feng.media.State
 
 class PlayerViewModel : ViewModel(), IPlayStateCallback {
@@ -17,6 +17,7 @@ class PlayerViewModel : ViewModel(), IPlayStateCallback {
     var duration: MutableLiveData<Int> = MutableLiveData(0)
     var state: MutableLiveData<State> = MutableLiveData(State.STOP)
     var videoSize: MutableLiveData<Pair<Int, Int>> = MutableLiveData()
+    private lateinit var url: String
 
     fun createPlayer(context: Context): IPlayer {
         player = IPlayer.create(context, null).apply {
@@ -26,18 +27,8 @@ class PlayerViewModel : ViewModel(), IPlayStateCallback {
     }
 
     fun play(url: String) {
+        this.url = url
         player.play(url, 0)
-    }
-
-    fun pause() {
-        player.pause()
-    }
-
-    fun mute() {
-    }
-
-    fun resume() {
-        player.start()
     }
 
     fun seekTo(position: Int) {
@@ -79,10 +70,22 @@ class PlayerViewModel : ViewModel(), IPlayStateCallback {
 
     fun startOrPause() {
         val state = player.state
-        if (state == State.PAUSE) {
-            player.start()
-        } else if (state == State.PLAYING) {
-            player.pause()
+        state?.let {
+            when (it) {
+                State.STOP -> {
+                    player.play(url, 0)
+                }
+
+                State.PAUSE -> {
+                    player.start()
+                }
+
+                State.PLAYING -> {
+                    player.pause()
+                }
+
+                State.PREPARING, State.PREPARED -> {}
+            }
         }
     }
 }

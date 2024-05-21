@@ -1,7 +1,6 @@
 package com.feng.player.viewmodel
 
 import android.content.Context
-import android.widget.Toast
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -37,7 +36,6 @@ open class MediaListViewModel : ViewModel() {
                 } ?: run {
                 withContext(Dispatchers.Main) {
                     state = MediaListState.Error
-                    Toast.makeText(context, "数据为空", Toast.LENGTH_LONG).show()
                 }
             }
         }

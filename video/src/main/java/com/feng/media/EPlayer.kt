@@ -23,6 +23,12 @@ class EPlayer(val context: Context) : IPlayer {
             mPlayStateCallback?.onVideoSizeChange(videoSize.width, videoSize.height)
         }
 
+        override fun onPlaybackStateChanged(playbackState: Int) {
+            if (playbackState == ExoPlayer.STATE_ENDED) {
+                onStateChange(dest = State.STOP)
+            }
+        }
+
         override fun onIsPlayingChanged(isPlaying: Boolean) {
             if (isPlaying) {
                 if (mState != State.PAUSE) {
@@ -30,10 +36,6 @@ class EPlayer(val context: Context) : IPlayer {
                     onPrepared()
                 }
                 onStateChange(dest = State.PLAYING)
-                mHandler.removeMessages(MsgId.POSITION_CHANGE)
-                mHandler.sendMessage(Message.obtain().apply {
-                    what = MsgId.POSITION_CHANGE
-                })
             } else {
                 // Not playing because playback is paused, ended, suppressed, or the player
                 // is buffering, stopped or failed. Check player.playWhenReady,
@@ -96,6 +98,18 @@ class EPlayer(val context: Context) : IPlayer {
     }
 
     private fun onStateChange(src: State = mState, dest: State) {
+        when (dest) {
+            State.PLAYING -> {
+                mHandler.removeMessages(MsgId.POSITION_CHANGE)
+                mHandler.sendMessage(Message.obtain().apply {
+                    what = MsgId.POSITION_CHANGE
+                })
+            }
+
+            else -> {
+                mHandler.removeMessages(MsgId.POSITION_CHANGE)
+            }
+        }
         mState = dest
         player.playbackState
         mPlayStateCallback!!.onPlayerStateChanged(src, dest)
@@ -110,13 +124,11 @@ class EPlayer(val context: Context) : IPlayer {
     }
 
     override fun pause() {
-        mHandler.removeMessages(MsgId.POSITION_CHANGE)
         player.pause()
         onStateChange(dest = State.PAUSE)
     }
 
     override fun stop() {
-        mHandler.removeMessages(MsgId.POSITION_CHANGE)
         player.stop()
         onStateChange(dest = State.STOP)
     }

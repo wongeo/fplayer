@@ -34,7 +34,7 @@ class PlayerFragment : Fragment(), View.OnClickListener, OnSeekBarChangeListener
     private lateinit var mTimeTextView: TextView
     private lateinit var mStartOrPause: ImageView
     private lateinit var mFullScreen: View
-    private lateinit var playerView: ResizeView;
+    private lateinit var playerView: ResizeView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,7 +47,7 @@ class PlayerFragment : Fragment(), View.OnClickListener, OnSeekBarChangeListener
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val view = inflater.inflate(R.layout.player_fragment, container, false);
+        val view = inflater.inflate(R.layout.player_fragment, container, false)
 
         //播放器父容器
         mSmallContainer = view.findViewById(R.id.small_screen_player_view_container)
@@ -99,15 +99,13 @@ class PlayerFragment : Fragment(), View.OnClickListener, OnSeekBarChangeListener
 
         viewModel.state.observe(viewLifecycleOwner) {
             when (it) {
-                State.STOP, State.PAUSE -> {
-                    mStartOrPause.setImageResource(R.drawable.ic_player_playing)
-                }
-
                 State.PLAYING -> {
                     mStartOrPause.setImageResource(R.drawable.ic_player_pause)
                 }
 
-                else -> {}
+                else -> {
+                    mStartOrPause.setImageResource(R.drawable.ic_player_playing)
+                }
             }
         }
 
@@ -211,9 +209,11 @@ class PlayerFragment : Fragment(), View.OnClickListener, OnSeekBarChangeListener
     }
 
     override fun onProgressChanged(seekPanel: SeekPanel?, diffProgress: Int) {
-        val progress = mSeekBar.progress + diffProgress
-        mSeekBar.progress = progress
-        seeking(mSeekBar.progress + diffProgress)
+        viewModel.progress.value?.let {
+            val progress = it + diffProgress
+            mSeekBar.progress = progress
+            seeking(progress)
+        }
     }
 
     override fun onStartTrackingTouch(seekPanel: SeekPanel?) {
