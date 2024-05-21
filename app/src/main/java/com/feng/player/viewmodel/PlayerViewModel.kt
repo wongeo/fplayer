@@ -40,6 +40,10 @@ class PlayerViewModel : ViewModel(), IPlayStateCallback {
         player.stop()
     }
 
+    fun setSpeed(speed: Float) {
+        player.setSpeed(speed)
+    }
+
     override fun onCompletion() {
 
     }

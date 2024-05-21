@@ -22,7 +22,7 @@ import com.feng.resize.ResizeView
 import com.feng.video.view.SeekPanel
 import com.feng.video.view.SeekPanel.OnSeekPanelListener
 
-class PlayerFragment : Fragment(), View.OnClickListener, OnSeekBarChangeListener, OnSeekPanelListener {
+class PlayerFragment : Fragment(), View.OnClickListener, OnSeekBarChangeListener {
 
     private lateinit var viewModel: PlayerViewModel
     private lateinit var mSmallContainer: ViewGroup
@@ -73,7 +73,7 @@ class PlayerFragment : Fragment(), View.OnClickListener, OnSeekBarChangeListener
         mSeekBar = view.findViewById(R.id.seek_bar)
         mSeekBar.setOnSeekBarChangeListener(this)
         mSeekPanel = view.findViewById(R.id.seek_panel)
-        mSeekPanel.setOnSeekPanelListener(this)
+        mSeekPanel.setOnSeekPanelListener(playControlListener)
         return view
     }
 
@@ -208,26 +208,39 @@ class PlayerFragment : Fragment(), View.OnClickListener, OnSeekBarChangeListener
         seekEnd(progress = seekBar!!.progress)
     }
 
-    override fun onProgressChanged(seekPanel: SeekPanel?, diffProgress: Int) {
-        viewModel.progress.value?.let {
-            val progress = it + diffProgress
-            mSeekBar.progress = progress
-            seeking(progress)
+    private val playControlListener = object : OnSeekPanelListener {
+
+        override fun onProgressChanged(seekPanel: SeekPanel?, diffProgress: Int) {
+            viewModel.progress.value?.let {
+                val progress = it + diffProgress
+                mSeekBar.progress = progress
+                seeking(progress)
+            }
         }
-    }
 
-    override fun onStartTrackingTouch(seekPanel: SeekPanel?) {
-        seekStart()
-    }
-
-    override fun onStopTrackingTouch(seekPanel: SeekPanel?) {
-        viewModel.progress.value?.let {
-            val progress = it + (seekPanel?.progress ?: 0)
-            seekEnd(progress)
+        override fun onStartTrackingTouch(seekPanel: SeekPanel?) {
+            seekStart()
         }
-    }
 
-    override fun onCenterDoubleTap(seekPanel: SeekPanel?) {
-        startOrPause()
+        override fun onStopTrackingTouch(seekPanel: SeekPanel?) {
+            viewModel.progress.value?.let {
+                val progress = it + (seekPanel?.progress ?: 0)
+                seekEnd(progress)
+            }
+        }
+
+        override fun onCenterDoubleTap(seekPanel: SeekPanel?) {
+            startOrPause()
+        }
+
+        override fun onLongPress(seekPanel: SeekPanel?, touchRect: Int, press: Boolean) {
+            if (press) {
+                //开始长按
+                viewModel.setSpeed(3F)
+            } else {
+                //停止长按
+                viewModel.setSpeed(1F)
+            }
+        }
     }
 }

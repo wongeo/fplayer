@@ -61,6 +61,8 @@ public class SeekPanel extends FrameLayout {
         void onStopTrackingTouch(SeekPanel seekPanel);
 
         void onCenterDoubleTap(SeekPanel seekPanel);
+
+        void onLongPress(SeekPanel seekPanel, @TouchRect int touchRect, boolean press);
     }
 
     private @interface TouchRect {
@@ -85,6 +87,15 @@ public class SeekPanel extends FrameLayout {
             return 0;
         }
 
+        private boolean isLongPress;
+
+        @Override
+        public void onLongPress(@NonNull MotionEvent e) {
+            isLongPress = true;
+            @TouchRect int rect = touchRect(e);
+            mOnSeekPanelListener.onLongPress(SeekPanel.this, rect, true);
+        }
+
         @Override
         public boolean onDoubleTap(MotionEvent e) {//双击事件
             int touchRect = touchRect(e);
@@ -105,6 +116,10 @@ public class SeekPanel extends FrameLayout {
         }
 
         public void onUp(MotionEvent e) {
+            if (isLongPress) {
+                mOnSeekPanelListener.onLongPress(SeekPanel.this, 0, false);
+                isLongPress = false;
+            }
             if (isScrolling) {
                 mOnSeekPanelListener.onStopTrackingTouch(SeekPanel.this);
                 isScrolling = false;
