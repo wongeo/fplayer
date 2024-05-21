@@ -221,7 +221,10 @@ class PlayerFragment : Fragment(), View.OnClickListener, OnSeekBarChangeListener
     }
 
     override fun onStopTrackingTouch(seekPanel: SeekPanel?) {
-        seekEnd(mSeekBar.progress + (seekPanel?.progress ?: 0))
+        viewModel.progress.value?.let {
+            val progress = it + (seekPanel?.progress ?: 0)
+            seekEnd(progress)
+        }
     }
 
     override fun onCenterDoubleTap(seekPanel: SeekPanel?) {
